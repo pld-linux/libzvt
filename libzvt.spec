@@ -19,8 +19,6 @@ BuildRequires:	gnome-common
 PreReq:		utempter
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
-%define		_prefix		/usr/X11R6
-%define		_mandir		%{_prefix}/man
 
 %description
 The libzvt package contains a terminal widget for GTK+. It's used by
