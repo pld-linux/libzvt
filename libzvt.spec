@@ -7,6 +7,7 @@ Release:	5
 License:	LGPL
 Group:		X11/Libraries
 Source0:	http://ftp.gnome.org/pub/GNOME/sources/%{name}/2.0/%{name}-%{version}.tar.bz2
+# Source0-md5:	4bbea49495a341650fa1f89908e6554e
 Patch0:		%{name}-am15.patch
 Patch1:		%{name}-i18n-branch.patch
 URL:		http://www.gnome.org/
