@@ -107,7 +107,6 @@ rm -rf $RPM_BUILD_ROOT
 %files devel
 %defattr(644,root,root,755)
 %{_libdir}/lib*.so
-%{_libdir}/pkgconfig/*
 %{_includedir}/libzvt-*
 %{_pkgconfigdir}/*
 
