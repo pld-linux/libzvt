@@ -1,12 +1,12 @@
-%define		gtk2_version		2.0.2
-%define		glib2_version		2.0.1
+%define		gtk2_version		2.0.3
+%define		glib2_version		2.0.3
 %define		libart_lgpl_version	2.3.8
 
 Summary:	Zvt terminal widget library
 Summary(pl):	Biblioteka z widgetem terminala zvt
 Name:		libzvt
-Version:	1.116.1
-Release:	1
+Version:	1.99999.0
+Release:	0.1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.gnome.org/pub/gnome/pre-gnome2/sources/libzvt/%{name}-%{version}.tar.bz2
