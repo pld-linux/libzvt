@@ -12,9 +12,8 @@ Group:		X11/Libraries
 Source0:	ftp://ftp.gnome.org/pub/gnome/pre-gnome2/sources/libzvt/%{name}-%{version}.tar.bz2
 URL:		ftp://www.gnome.org/
 BuildRequires:	glib2-devel >= %{glib2_version}
-BuildRequires:	gtk2-devel >= %{gtk2_version}
+BuildRequires:	gtk+2-devel >= %{gtk2_version}
 BuildRequires:	libart_lgpl-devel >= %{libart_lgpl_version}
-# Added to avoid the warning messages about utmp group, bug #24171
 PreReq:		utempter
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
