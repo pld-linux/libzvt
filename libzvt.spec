@@ -1,17 +1,16 @@
-%define		gtk2_version		1.3.13
-%define		glib2_version		1.3.13
+%define		gtk2_version		2.0.2
+%define		glib2_version		2.0.1
 %define		libart_lgpl_version	2.3.8
 
 Summary:	Zvt terminal widget library
 Summary(pl):	Biblioteka z widgetem terminala zvt
 Name:		libzvt
-Version:	1.114.0
-Release:	2
+Version:	1.115.2
+Release:	0.1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.gnome.org/pub/gnome/pre-gnome2/sources/libzvt/%{name}-%{version}.tar.bz2
-Patch0:		%{name}-ac_fixes.patch
-Patch1:		%{name}-am15.patch
+Patch0:		%{name}-am15.patch
 URL:		ftp://www.gnome.org/
 BuildRequires:	autoconf
 BuildRequires:	automake
@@ -19,6 +18,7 @@ BuildRequires:	glib2-devel >= %{glib2_version}
 BuildRequires:	gtk+2-devel >= %{gtk2_version}
 BuildRequires:	libart_lgpl-devel >= %{libart_lgpl_version}
 BuildRequires:	libtool
+BuildRequires:	gnome-common >= 1.2.4
 PreReq:		utempter
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -72,12 +72,11 @@ Statyczna wersja bibliotek libzvt.
 %prep
 %setup -q
 %patch0 -p1
-%patch1 -p1
 
 %build
 rm -f missing
 libtoolize --copy --force
-aclocal
+aclocal -I %{_aclocaldir}/gnome2-macros
 autoconf
 automake -a -c -f
 %configure
@@ -101,12 +100,13 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(644,root,root,755)
 %doc *.gz
-%attr(755,root,root) %{_libdir}/lib*.so.*
+%attr(755,root,root) %{_libdir}/lib*.so.*.*
 %attr(2755,root,utmp) %{_sbindir}/gnome-pty-helper-2
 
 %files devel
 %defattr(644,root,root,755)
 %{_libdir}/lib*.so
+%{_libdir}/lib*.la
 %{_includedir}/libzvt-*
 %{_pkgconfigdir}/*
 
