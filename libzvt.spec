@@ -92,7 +92,7 @@ install $RPM_BUILD_ROOT%{_aclocaldir}
 	DESTDIR=$RPM_BUILD_ROOT \
 	pkgconfigdir=%{_pkgconfigdir}
 
-install %{_SOURCE1} $RPM_BUILD_ROOT%{_aclocaldir}
+install %{SOURCE1} $RPM_BUILD_ROOT%{_aclocaldir}
 
 gzip -9nf AUTHORS ChangeLog NEWS README
 
