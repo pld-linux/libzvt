@@ -6,13 +6,13 @@ Summary:	Zvt terminal widget library
 Summary(pl):	Biblioteka z widgetem terminala zvt
 Name:		libzvt
 Version:	2.0.1
-Release:	3
+Release:	4
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.gnome.org/pub/gnome/pre-gnome2/sources/libzvt/%{name}-%{version}.tar.bz2
 Patch0:		%{name}-am15.patch
 Patch1:		%{name}-i18n-branch.patch
-URL:		ftp://www.gnome.org/
+URL:		http://www.gnome.org/
 BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	glib2-devel >= %{glib2_version}
