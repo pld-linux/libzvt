@@ -3,6 +3,7 @@
 %define libart_lgpl_version 2.3.8
 
 Summary:	Zvt terminal widget library
+Summary(pl):	Biblioteka z widgetem terminala zvt
 Name:		libzvt
 Version:	1.110.0
 Release:	1
@@ -30,8 +31,13 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 The libzvt package contains a terminal widget for GTK+. It's used by
 gnome-terminal among other programs.
 
+%description -l pl
+Ten pakiet zawiera widget terminala dla GTK+. Jest u¿ywany przez
+gnome-terminal oraz inne programy.
+
 %package devel
-Summary:	Libraries and headers for libzvt
+Summary:	Headers for libzvt
+Summary(pl):	Pliki nag³ówkowe libzvt
 Group:		X11/Development/Libraries
 Group(de):	X11/Entwicklung/Libraries
 Group(es):	X11/Desarrollo/Bibliotecas
@@ -40,12 +46,10 @@ Group(pl):	X11/Programowanie/Biblioteki
 Group(pt_BR):	X11/Desenvolvimento/Bibliotecas
 Group(ru):	X11/òÁÚÒÁÂÏÔËÁ/âÉÂÌÉÏÔÅËÉ
 Group(uk):	X11/òÏÚÒÏÂËÁ/â¦ÂÌ¦ÏÔÅËÉ
-Requires:	%name = %{version}
-
+Requires:	%{name} = %{version}
 Requires:	glib2-devel >= %{glib2_version}
 Requires:	gtk2-devel >= %{gtk2_version}
 Requires:	libart_lgpl-devel >= %{libart_lgpl_version}
-
 Conflicts:	gnome-libs-devel < 1.4.1.2
 
 %description devel
@@ -56,6 +60,30 @@ You should install the libzvt-devel package if you would like to
 compile applications that use the zvt terminal widget. You do not need
 to install libzvt-devel if you just want to use precompiled
 applications.
+
+%description devel -l pl
+Pliki nag³ówkowe potrzebne do kompilowania programów u¿ywaj±cych
+libzvt.
+
+%package static
+Summary:	Static libzvt library
+Summary(pl):	Statyczna biblioteka libzvt
+Group:		X11/Development/Libraries
+Group(de):	X11/Entwicklung/Libraries
+Group(es):	X11/Desarrollo/Bibliotecas
+Group(fr):	X11/Development/Librairies
+Group(pl):	X11/Programowanie/Biblioteki
+Group(pt_BR):	X11/Desenvolvimento/Bibliotecas
+Group(ru):	X11/òÁÚÒÁÂÏÔËÁ/âÉÂÌÉÏÔÅËÉ
+Group(uk):	X11/òÏÚÒÏÂËÁ/â¦ÂÌ¦ÏÔÅËÉ
+Requires:	%{name}-devel = %{version}
+Conflicts:	gnome-libs-static < 1.4.1.2
+
+%description static
+Static version of libzvt libraries.
+
+%description static -l pl
+Statyczna wersja bibliotek libzvt.
 
 %prep
 %setup -q
@@ -70,22 +98,28 @@ rm -rf $RPM_BUILD_ROOT
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
 
+gzip -9nf AUTHORS ChangeLog NEWS README
+
 %find_lang %{name}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
+%post	-p /sbin/ldconfig
+%postun	-p /sbin/ldconfig
+
 %files -f %{name}.lang
 %defattr(644,root,root,755)
-%doc AUTHORS COPYING ChangeLog NEWS README
-
-%{_libdir}/lib*.so.*
-%attr(2755, root, utmp) %{_sbindir}/gnome-pty-helper-2
+%doc AUTHORS.gz ChangeLog.gz NEWS.gz README.gz
+%attr(755,root,root) %{_libdir}/lib*.so.*
+%attr(2755,root,utmp) %{_sbindir}/gnome-pty-helper-2
 
 %files devel
 %defattr(644,root,root,755)
-
-%{_libdir}/lib*.a
 %{_libdir}/lib*.so
 %{_libdir}/pkgconfig/*
 %{_includedir}/*
+
+%files static
+%defattr(644,root,root,755)
+%{_libdir}/lib*.a
