@@ -14,7 +14,7 @@ Source0:	ftp://distfiles.pld-linux.org/src/%{name}-%{_snap}.tar.bz2
 Patch0:		%{name}-am15.patch
 URL:		http://www.gnome.org/
 BuildRequires:	autoconf >= 2.53
-BuildRequires:	automake >= 1.7
+BuildRequires:	automake >= 1:1.7
 BuildRequires:	gtk+2-devel
 BuildRequires:	libart_lgpl-devel
 BuildRequires:	libtool >= 1.4.3
