@@ -1,0 +1,11 @@
+--- libzvt-1.114.0/libzvt/Makefile.am~	Thu Apr 25 16:33:30 2002
++++ libzvt-1.114.0/libzvt/Makefile.am	Thu Apr 25 16:33:30 2002
+@@ -27,8 +27,6 @@
+ libzvt_2_include_HEADERS = \
+ 	libzvt.h lists.h background.h vt.h vtx.h
+ 
+-lib_LTLIBRARIES = libzvt-2.la
+-
+ libzvt_2_la_SOURCES = \
+ 	libzvt.h \
+ 	libzvt-init.c \
