@@ -1,0 +1,55 @@
+diff -ur libzvt-2.0.1/libzvt/zvtterm.c libzvt-2.0.1-/libzvt/zvtterm.c
+--- libzvt-2.0.1/libzvt/zvtterm.c	Mon Jun  3 16:59:26 2002
++++ libzvt-2.0.1-/libzvt/zvtterm.c	Tue Aug  6 17:57:53 2002
+@@ -3413,26 +3413,34 @@
+   }
+   break;
+   /* this is limited to 65535 characters! */
+-  case ZVT_FONT_FONTSET: {
+-    wchar_t *expandwc = zp->text_expand;
+-    XFontSet fontset = (XFontSet) GDK_FONT_XFONT(f);
++  case ZVT_FONT_FONTSET:
++    {
++      char *expandmb = zp->text_expand;
++      XFontSet fontset = (XFontSet) GDK_FONT_XFONT(f);
+ 
+-    for (i=0;i<len;i++) {
+-      expandwc[i] = VT_ASCII(line->data[i+col]);
+-    }
++      for (i = 0; i < len;i++) {
++        c=VT_ASCII(line->data[i+col]);
++	expandmb[i] = c & 0x000000ff;
++      }
+ 
+-    /* render wide characters, with fill if we can */
+-    if (dofill) {
+-      XwcDrawImageString(GDK_WINDOW_XDISPLAY(widget->window), GDK_WINDOW_XWINDOW(real_drawable),
+-			 fontset, GDK_GC_XGC(fgc), offx + x, offy + y, expandwc, len);
+-    } else {
+-      XwcDrawString(GDK_WINDOW_XDISPLAY(widget->window), GDK_WINDOW_XWINDOW(real_drawable),
+-		    fontset, GDK_GC_XGC(fgc), offx + x, offy + y, expandwc, len);
++      /* render wide characters, with fill if we can */
++      if (dofill)
++	XmbDrawImageString (GDK_WINDOW_XDISPLAY(widget->window),
++			    GDK_WINDOW_XWINDOW(real_drawable),
++			    fontset, GDK_GC_XGC(fgc), offx + x, offy + y,
++			    expandmb, len);
++      else
++	XmbDrawString (GDK_WINDOW_XDISPLAY(widget->window),
++		       GDK_WINDOW_XWINDOW(real_drawable),
++		       fontset, GDK_GC_XGC(fgc), offx + x, offy + y,
++		       expandmb, len);
++      if (overstrike)
++	XmbDrawString (GDK_WINDOW_XDISPLAY(widget->window),
++		       GDK_WINDOW_XWINDOW(real_drawable),
++		       fontset, GDK_GC_XGC(fgc), offx + x + 1, offy + y,
++		       expandmb, len);
+     }
+-    if (overstrike)
+-      XwcDrawString(GDK_WINDOW_XDISPLAY(widget->window), GDK_WINDOW_XWINDOW(real_drawable),
+-		    fontset, GDK_GC_XGC(fgc), offx + x + 1, offy + y, expandwc, len);
+-  }
++    break;
+   }
+   offx+=real_offx;
+   offy+=real_offy;
