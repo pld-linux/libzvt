@@ -1,6 +1,3 @@
-%define		gtk2_version		2.0.3
-%define		glib2_version		2.0.3
-%define		libart_lgpl_version	2.3.8
 
 Summary:	Zvt terminal widget library
 Summary(pl):	Biblioteka z widgetem terminala zvt
@@ -9,15 +6,14 @@ Version:	2.0.1
 Release:	4
 License:	LGPL
 Group:		X11/Libraries
-Source0:	ftp://ftp.gnome.org/pub/gnome/pre-gnome2/sources/libzvt/%{name}-%{version}.tar.bz2
+Source0:	http://ftp.gnome.org/pub/GNOME/sources/%{name}/2.0/%{name}-%{version}.tar.bz2
 Patch0:		%{name}-am15.patch
 Patch1:		%{name}-i18n-branch.patch
 URL:		http://www.gnome.org/
 BuildRequires:	autoconf
 BuildRequires:	automake
-BuildRequires:	glib2-devel >= %{glib2_version}
-BuildRequires:	gtk+2-devel >= %{gtk2_version}
-BuildRequires:	libart_lgpl-devel >= %{libart_lgpl_version}
+BuildRequires:	gtk+2-devel
+BuildRequires:	libart_lgpl-devel
 BuildRequires:	libtool
 BuildRequires:	gnome-common
 PreReq:		utempter
@@ -39,10 +35,8 @@ Summary:	Headers for libzvt
 Summary(pl):	Pliki nag³ówkowe libzvt
 Group:		X11/Development/Libraries
 Requires:	%{name} = %{version}
-Requires:	glib2-devel >= %{glib2_version}
-Requires:	gtk+2-devel >= %{gtk2_version}
-Requires:	libart_lgpl-devel >= %{libart_lgpl_version}
-Conflicts:	gnome-libs-devel < 1.4.1.2
+Requires:	gtk+2-devel
+Requires:	libart_lgpl-devel
 
 %description devel
 The libzvt package contains a terminal widget for GTK+. It's used by
@@ -62,7 +56,6 @@ Summary:	Static libzvt library
 Summary(pl):	Statyczna biblioteka libzvt
 Group:		X11/Development/Libraries
 Requires:	%{name}-devel = %{version}
-Conflicts:	gnome-libs-static < 1.4.1.2
 
 %description static
 Static version of libzvt libraries.
