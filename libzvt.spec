@@ -18,7 +18,7 @@ BuildRequires:	automake >= 1.7
 BuildRequires:	gtk+2-devel
 BuildRequires:	libart_lgpl-devel
 BuildRequires:	libtool >= 1.4.3
-BuildRequires:	gnome-common
+BuildRequires:	gnome-common >= 2.8.0
 BuildRequires:	pkgconfig >= 0.14.0
 Requires:	utempter
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -88,7 +88,7 @@ Statyczna wersja bibliotek libzvt.
 %build
 rm -f missing
 %{__libtoolize}
-%{__aclocal} -I %{_aclocaldir}/gnome2-macros
+%{__aclocal}
 %{__autoconf}
 %{__automake}
 %configure
