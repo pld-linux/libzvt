@@ -86,7 +86,7 @@ automake -a -c -f
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install $RPM_BUILD_ROOT%{_aclocaldir}
+install -d $RPM_BUILD_ROOT%{_aclocaldir}
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT \
