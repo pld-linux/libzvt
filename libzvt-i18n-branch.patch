@@ -1,17 +1,318 @@
-Index: libzvt/.cvsignore
-===================================================================
-RCS file: /cvs/gnome/libzvt/libzvt/.cvsignore,v
-retrieving revision 1.5
-retrieving revision 1.4.2.1
-diff -u -r1.5 -r1.4.2.1
-Index: libzvt/Makefile.am
-===================================================================
-RCS file: /cvs/gnome/libzvt/libzvt/Makefile.am,v
-retrieving revision 1.61
-retrieving revision 1.59.2.3
-diff -u -r1.61 -r1.59.2.3
---- libzvt/Makefile.am	19 Jun 2002 18:53:58 -0000	1.61
-+++ libzvt/Makefile.am	2 Aug 2002 01:58:16 -0000	1.59.2.3
+Only in /home/users/malekith/cvs/gnome/libzvt: .cvsignore
+Only in /home/users/malekith/cvs/gnome/libzvt: CVS
+diff -ur libzvt-2.0.1/ChangeLog /home/users/malekith/cvs/gnome/libzvt/ChangeLog
+--- libzvt-2.0.1/ChangeLog	Mon Jun 24 17:41:13 2002
++++ /home/users/malekith/cvs/gnome/libzvt/ChangeLog	Tue Oct 15 20:15:18 2002
+@@ -1,56 +1,261 @@
+-2002-06-24  jacob berkman  <jacob@ximian.com>
++Wed Oct  9 10:39:02 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
+ 
+-	* configure.in: 2.0.1
++	* libzvt/zvtterm.c (zvt_term_writechild):
++	convert UTF-8 data to locale's encoding. gnome-terminal always
++	passes UTF-8 data to the terminal widget.
++	(#95230: drag&drop is broken with non-ASCII characters)
+ 
+-	* libzvt/Makefile.am (install-exec-local): add a dep to the
+-	ptyheler install rule to fix chown bustage
++2002-09-09  Padraig O'Briain  <padraig.obriain@sun.com>
+ 
+-2002-06-20  jacob berkman  <jacob@ximian.com>
++	* libzvt/zvt-accessible.c (zvt_accessible_draw_text): Call 
++	real_draw_text() before zvt_term_get_buffer() so that clearing
++	the screen works correctly. (bug #925653)
+ 
+-	* libzvt/Makefile.am (libzvt_2_0_la_LDFLAGS):add libtool version
++Fri Aug 30 15:49:06 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
+ 
+-	[ merged from HEAD ]
++	* libzvt/zvtterm.c (zvt_term_readdata): Patch from RajKumar Sive
++	(#82083)
++	a) Put the IO callback (g_io_add_watch/gdk_input_add) for libzvt 
++	at a lower main loop priority than the GTK main loop - this
++	enables the menu-items to respond faster when a infinite loop like
++	the above one runs.
++	b) For every 8K data read from IO stream zvt_term_readdata()
++	writes it to the viewport (current code blocks till all data come).
+ 
+-flags2002-06-19  jacob berkman  <jacob@ximian.com>
++	* libzvt/libzvt.h, zvti18n.c, zvtterm.c, vt.c
++	create zvt_term_locale_from_utf8 and zvt_term_locale_to_utf8
++	as g_locale_from_utf8 and g_locale_to_utf8 wrappers and make
++	special case for "C" locale to handle 8-bit characters
++	(#85052)
+ 
+-	* libzvt/libzvt-2.0.pc.in:
+-	* configure.in: bump to 2.0.0, and add libtool versioning foo
++Mon Aug 19 20:38:17 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
++
++	* libzvt/zvti18n.c (zvt_localechar_iswide): given utf8 text should
++	be null-terminated. (work around glib's g_locale_from_utf8 bug
++	(#91222))
++
++Mon Aug 19 14:29:24 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
++
++	* libzvt/zvti18n.c (zvt_term_get_xfontset_internal): get font
++	ascent from XFontSet instead of pango metrics(Fixed #90816,
++	#90818).
++
++	* libzvt/zvti18n.c (zvt_term_im_reset): don't reset input method
++	not needed any-time at least in gnome-terminal
++
++Fri Aug 16 09:50:38 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
++
++	* libzvt/Makefile.am libzvt/libzvt.h
++	* libzvt/vt.c libzvt/update.c libzvt/zvtterm.c : Move
++	i18n functions to libzvt/zvti18n.c
++	* libzvt/zvti18n.c : new module for i18n functions
++	* libzvt/zterm.c (FONT): use pango font
++
++Thu Aug 15 11:20:31 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
++
++	* libzvt/zvtterm.c (zvt_term_preedit_changed_handler):
++	fix some memory trash and leak around feedback attribute list.
++
++Mon Aug 12 20:34:25 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
++
++	* libzvt/vt.c: 
++	* libzvt/update.c: 
++	* libzvt/zvtterm.c (localechar_iswide_internal): Fixes #90129
++	
++	use own localechar_iswide function instead of g_unichar_iswide
++	when Xlib drawing functions are used instead of	pango layout.
++
++Thu Aug  8 23:37:29 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
++
++	* libzvt/zvtterm.c (zvt_term_readdata): Part of fixes #90129
++	- concat unconverted data to the next read data.
++	- add more error checks.
++	- skip one character and show "?" as a fallback when it's not
++	  able to convert to UTF-8.
++
++	* libzvt/zvtterm.c (paste_received): EUC-JP <-> UTF-8 code
++	converter in libiconv-1.7 does not convert some text like
++	0x8ff3f3 or 0xada1 which kanji command on Solari Ja EUC locale
++	returns, and when they are pasted, a terminal crashes due to
++	conversion error.
++
++Wed Aug  7 16:58:56 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
++
++	* libzvt/zvtterm.c: typo ZVT_UTF8 -> ZVT_UTF, this has
++	prevented using "UTF8_STRING" target for the selection
++
++	* libzvt/zvtterm.c:
++	* libzvt/update.h:
++	* libzvt/vt.c:
++	* libzvt/libzvt.h:
++	* libzvt/vt.h:	merge changes from HEAD
++	
++Wed Aug  7 15:27:24 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
++
++	* libzvt/zvtterm.c (zvt_term_real_copy_clipboard): set type
++	of the selection data to one for UTF-32 so that it should be
++	converted to UTF-8 at zvt_term_convert_selection.
++
++	* libzvt/zvtterm.c (zvt_term_convert_selection):
++	g_warning if UTF-32 text is requested.
++	
++Wed Aug  7 13:45:21 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
++
++	* libzvt/zvtterm.c (zvt_term_init): 
++	* libzvt/zvtterm.c (zvt_term_set_pango_font):
++	manage properly zp->pango_font, zp->pango_font_bold, for memory
++	initiation, allocation and free.
++
++Wed Aug  7 12:59:28 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
++
++	* libzvt/zvtterm.c (zvt_term_destroy): comment out code to
++	free pango font description upon closing a window or a tab.
++	This would make a terminal crash in CJK locales where preedit
++	text is drawn with pango layout function.
+ 
+-	* libzvt/subshell.c:
+-	* libzvt/Makefile.am: install gnome-pty-helper in $libexecdir,
+-	rather than $sbindir.  it's not something anyone should be running
+-	from a shell
++Wed Aug  7 09:57:16 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
+ 
+-2002-06-11  jacob berkman  <jacob@ximian.com>
++	* libzvt/zvtterm.c (zvt_term_cursor_blink): restore
++	the comment out of this function - this was done so while
++	debugging..
+ 
+-	* libzvt/update.c (vt_fix_selection): workaround for bug #73284
+-	from samuel stringham <sam@e-sa.com>
++Tue Aug  6 16:35:30 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
+ 
+-2002-06-05  jacob berkman  <jacob@ximian.com>
++	* libzvt/zvtterm.c (vt_draw_text): filling makes weired stripe
++	output when background effect(background image or transparent
++	background) is used
+ 
+-	* libzvt/Makefile.am (install-exec-local): 
+-	* configure.in: on darwin, install gnome-pty-helper as group admin
+-	rather than root
++Tue Aug  6 15:46:56 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
+ 
+-	* libzvt/gnome-pty-helper.c (sanity_checks): if the settings are
+-	below our sensible limit, try setting the limit to what we think
+-	we should have before giving up
++	* libzvt/zvtterm.c (vt_draw_text): revert one change to create
++	own XGC to fill spacing
+ 
+-	these are from the gnome-libs 1.4 fink patches and make
+-	gnome-terminal work on os x
++Tue Aug  6 15:25:13 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
+ 
+-2002-06-03  jacob berkman  <jacob@ximian.com>
++	* libzvt/zvtterm.c (zvt_term_readdata):
++	- use g_locale_to_utf8 instead of g_convert_with_fallback
++	- fixed memory leak
++	* libzvt/zvtterm.c (vt_draw_text):
++	- No need to create own XGC to fill spacing
++	
++Mon Aug  5 16:27:15 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
++
++	* libzvt/zvtterm.c (zvt_term_get_xfontset_internal):
++	- get maximam per character width and height of ASCII characters.
++	- should not use new fontset when either of charwidth or
++	charheight with the new fontset is 0.
++
++Sat Aug  3 11:31:51 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
++
++	* libzvt/zvtterm.c (zvt_term_get_xfontset): 
++	- add a few more fallback methods to create a XFontSet
++	- free missing charset list
++	
++	* libzvt/zvtterm.c (vt_draw_text):
++	set foreground properly - this should fix ru.koi8-r weired
++	"filling" problem pointed by Pablo.
++	
++Fri Aug  2 18:52:35 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
++
++	* libzvt/zvtterm.c (zvt_term_set_pango_font):
++	avoid recursive call of zvt_term_set_font_name - which would cause
++	infinite loop when fontset creation fails.
++
++Fri Aug  2 17:47:02 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
++
++	* libzvt/zvtterm.c (zvt_term_get_xfontset):
++	get the approxiamate text width and height of whole ASCII
++	characters and use it for per-char width and height.
++
++Fri Aug  2 14:13:27 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
++
++	* libzvt/zvtterm.c (xlfd_from_pango_font_description):
++	check #if XlibSpecificationRelease >= 6 for XOpenOM/XGetOMValues,
++	which were not in X11R5.
++	
++Fri Aug  2 13:52:43 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
++
++	* libzvt/zvtterm.c (xlfd_from_pango_font_description):
++	get required charsets for the locale from XOpenOM first, then
++	try default encodings, based on an idea from Pablo Saratxaga
++	<pablo@mandrakesoft.com.>
++
++Thu Aug  1 21:05:06 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
++
++	* libzvt/zvtterm.c (vt_draw_text): 
++	spacing between chars can be less than 0, there is no filling
++	needed in this case.
++
++Thu Aug  1 18:50:33 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
++
++	* libzvt/Makefile.am, libzvt/zvtterm.c, libzvt/libzvt.h,
++	  libzvt/update.c, libzvt/vt.c, libzvt/vt.h
++	
++	    lots of updates (Special thanks to Nalin and Havoc:-)
++	
++	    - #ifdef SUN_I18N -> #ifdef HAS_I18N
++	    - use Xlib's XmbDrawString and XmbDrawImageString directly
++	      instead of PangoLayout when drawing text on terminal widget
++	      mainly for performance's sake.
++	    - draw one character at a time to handle non-monospaced fonts
++	    - use VTE's code to get XLFD fontnames from PangoFontDescription
++	
++Wed Jul 31 10:00:40 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
++
++	* libzvt/zvtterm.c (vt_cursor_state):
++	set cursor location to the input methods.
++
++Mon Jul 29 14:13:19 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
++
++	* libzvt/libzvt.h: add zvt_term_set_pango_font () so that
++	gnome-terminal can use pango fonts instead of x fonts in its
++	profile.
++
++Fri Jul 19 11:37:01 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
++
++	* libzvt/zvtterm.c (vt_draw_text): Always needs to set 
++	PangoLanguage after getting Pango Context.
++
++Tue Jul  9 13:06:22 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
++
++	* libzvt/zvtterm.c (zvt_term_preedit_changed_handler): scrolling
++	preedit	window
++	* libzvt/vt.c (vt_parse_vt): linewrapping wide char.
++
++2002-07-09  jacob berkman  <jacob@ximian.com>
+ 
+ 	* Makefile.am:
+-	* po/: kill po
++	* configure.in:
++	* libzvt/Makefile.am:
++	* libzvt/gnome-pty-helper.c:
++	* libzvt/libzvt-2.0.pc.in:
++	* libzvt/subshell.c: merge changes from HEAD
+ 
+-	* configure.in: 1.117.0
++2002-07-01  Zbigniew Chyla  <cyba@gnome.pl>
+ 
+-	* libzvt/gnome-pty-helper.c: remove malloc.h
++	* libzvt/zvtterm.c (zvt_term_preedit_changed_handler, vt_draw_text):
++	Plugged gigantic leak.
+ 
+-	* revert i18n stuff, seems to have broken some things (committing
+-	them to libzvt-i18n branch)
++Fri Jun 28 11:37:15 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
+ 
++	* libzvt/Makefile.am
++	* libzvt/libzvt.h
++	* libzvt/update.c
++	* libzvt/vt.c
++	* libzvt/vt.h
++	* libzvt/zvtterm.c: fixes #78007 to make i18n work in
++	libzvt/gnome-terminal.
++
++	There are a few remaining issues:
++	
++	  1. font selection dialog
++	      "monotspace 13" is the default, and "ZVT_PANGO_FONT"
++	       environment variable can override it. But, we'd better
++	       have a font selection dialog to do it.
++	  2. preedit draw does not scroll
++	  3. does not handle illegal character - plan to display '?'s
++	     for iiiegal characters
++	
+ Tue May 28 22:26:41 2002  HideToshi Tajima  <hidetoshi.tajima@sun.com>
+ 
+ 	* libzvt/vt.c (vt_parse_vt): wrongly stripped out control
+Only in /home/users/malekith/cvs/gnome/libzvt: ChangeLog.old
+Only in libzvt-2.0.1: INSTALL
+Only in libzvt-2.0.1: Makefile.in
+Only in libzvt-2.0.1: aclocal.m4
+Only in /home/users/malekith/cvs/gnome/libzvt: autogen.sh
+Only in libzvt-2.0.1: config.guess
+Only in libzvt-2.0.1: config.h.in
+Only in libzvt-2.0.1: config.sub
+Only in libzvt-2.0.1: configure
+Only in libzvt-2.0.1: install-sh
+Only in /home/users/malekith/cvs/gnome/libzvt/libzvt: .cvsignore
+Only in /home/users/malekith/cvs/gnome/libzvt/libzvt: CVS
+Only in /home/users/malekith/cvs/gnome/libzvt/libzvt: DEPENDS.libzvt
+diff -ur libzvt-2.0.1/libzvt/Makefile.am /home/users/malekith/cvs/gnome/libzvt/libzvt/Makefile.am
+--- libzvt-2.0.1/libzvt/Makefile.am	Mon Jun 24 17:39:33 2002
++++ /home/users/malekith/cvs/gnome/libzvt/libzvt/Makefile.am	Tue Oct 15 20:15:19 2002
 @@ -22,7 +22,8 @@
  	-DG_DISABLE_DEPRECATED		\
  	-DGDK_DISABLE_DEPRECATED	\
@@ -22,27 +323,19 @@ diff -u -r1.61 -r1.59.2.3
  
  libzvt_2_includedir = $(includedir)/libzvt-2.0/libzvt
  
-
-Index: libzvt/gnome-pty-helper.c
-===================================================================
-RCS file: /cvs/gnome/libzvt/libzvt/gnome-pty-helper.c,v
-retrieving revision 1.59
-retrieving revision 1.57.2.1
-diff -u -r1.59 -r1.57.2.1
-Index: libzvt/libzvt-2.0.pc.in
-===================================================================
-RCS file: /cvs/gnome/libzvt/libzvt/libzvt-2.0.pc.in,v
-retrieving revision 1.7
-retrieving revision 1.6.2.1
-diff -u -r1.7 -r1.6.2.1
-Index: libzvt/libzvt.h
-===================================================================
-RCS file: /cvs/gnome/libzvt/libzvt/libzvt.h,v
-retrieving revision 1.15
-retrieving revision 1.14.2.3
-diff -u -r1.15 -r1.14.2.3
---- libzvt/libzvt.h	3 Jun 2002 16:59:26 -0000	1.15
-+++ libzvt/libzvt.h	2 Aug 2002 01:58:16 -0000	1.14.2.3
+@@ -46,6 +47,7 @@
+ 	background.c		\
+ 	background.h		\
+ 	zvtterm.c		\
++	zvti18n.c		\
+ 	zvt-marshal.c		\
+ 	zvt-marshal.h		\
+ 	zvt-accessible.c	\
+Only in libzvt-2.0.1/libzvt: Makefile.am.orig
+Only in libzvt-2.0.1/libzvt: Makefile.in
+diff -ur libzvt-2.0.1/libzvt/libzvt.h /home/users/malekith/cvs/gnome/libzvt/libzvt/libzvt.h
+--- libzvt-2.0.1/libzvt/libzvt.h	Mon Jun  3 18:59:26 2002
++++ /home/users/malekith/cvs/gnome/libzvt/libzvt/libzvt.h	Tue Oct 15 20:15:21 2002
 @@ -17,6 +17,28 @@
   *  License along with this program; if not, write to the Free Software
   *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
@@ -72,19 +365,18 @@ diff -u -r1.15 -r1.14.2.3
  #ifndef LIBZVT_H
  #define LIBZVT_H
  
-@@ -37,6 +59,11 @@
+@@ -37,6 +59,10 @@
  #include <gtk/gtkadjustment.h>
  #include <gtk/gtkwidget.h>
  #include <gtk/gtksignal.h>
 +#ifdef HAS_I18N
 +#include <X11/Xlib.h>
 +#include <gtk/gtkimcontext.h>
-+extern gint vt_column_from_utf8(gchar *, gint);
 +#endif
  #include <libzvt/vtx.h>
  #include <libzvt/background.h>
  
-@@ -121,6 +148,13 @@
+@@ -121,6 +147,14 @@
    GdkColor colors [18];		/* GdkColor for colormap support */
    /* GdkIC depecated, needto be substituted with GtkIMContext, not yet done */
    /* GdkIC *ic;*/		/* input context */
@@ -94,6 +386,7 @@ diff -u -r1.15 -r1.14.2.3
 +  gboolean need_im_reset;
 +  XFontSet xfontset;
 +  int font_ascent;
++  int padding;
 +#endif  
  
   /* file name of a pixmap, if NULL, none is loaded
@@ -112,34 +405,53 @@ diff -u -r1.15 -r1.14.2.3
  };
  
  /* *** DO NOT USE THIS IN APPS! *** */
-@@ -240,7 +281,13 @@
+@@ -240,6 +281,43 @@
  						int type,
  						int sx, int sy,
  						int ex, int ey);
 +#ifdef HAS_I18N
++gchar*	     zvt_term_locale_from_utf8		(const gchar *utf8_ptr,
++						 const gssize utf8_len,
++						 gsize *bytes_read,
++						 gsize *bytes_written,
++						 GError **error);
++
++gchar*	     zvt_term_locale_to_utf8		(const gchar *locale_ptr,
++						 const gssize locale_len,
++						 gsize *bytes_read,
++						 gsize *bytes_written,
++						 GError **error);
++
 +void         zvt_term_set_pango_font            (ZvtTerm *term,
 +						 const PangoFontDescription*);
++gboolean     zvt_localechar_iswide		(gunichar);
++gint	     zvt_column_from_utf8		(gchar *, gint);
++
++void	     zvt_term_im_new			(ZvtTerm *term);
++void	     zvt_term_im_cursor_location	(ZvtTerm *term);
++void	     zvt_term_preedit_update		(ZvtTerm *term);
++void	     zvt_term_im_reset			(ZvtTerm *term);
++void	     zvt_term_im_free			(ZvtTerm *term);
++
++void	     zvt_term_get_baseline_offset	(ZvtTerm *term,
++						 int row, int col,
++						 gint *offset_x, gint *offset_y);
++void	     zvt_term_draw_text			(ZvtTerm *term,
++						 struct vt_line *line,
++						 int row, int col,
++						 gchar *utf8_ptr, int len,
++						 int x, int y,
++						 int offx, int offy,
++						 GdkGC *fgc,
++						 int dofill, int overstrike);
 +#endif
++void	     zvt_term_scroll		       (ZvtTerm *term, int n);
  void         zvt_term_set_font_name            (ZvtTerm *term, char *name);
-+
-+
  void         zvt_term_set_fonts                (ZvtTerm *term,
  						GdkFont *font,
- 						GdkFont *font_bold);
-Index: libzvt/subshell.c
-===================================================================
-RCS file: /cvs/gnome/libzvt/libzvt/subshell.c,v
-retrieving revision 1.39
-retrieving revision 1.38.2.1
-diff -u -r1.39 -r1.38.2.1
-Index: libzvt/update.c
-===================================================================
-RCS file: /cvs/gnome/libzvt/libzvt/update.c,v
-retrieving revision 1.72
-retrieving revision 1.70.2.2
-diff -u -r1.72 -r1.70.2.2
---- libzvt/update.c	11 Jun 2002 16:04:32 -0000	1.72
-+++ libzvt/update.c	2 Aug 2002 01:58:16 -0000	1.70.2.2
+diff -ur libzvt-2.0.1/libzvt/update.c /home/users/malekith/cvs/gnome/libzvt/libzvt/update.c
+--- libzvt-2.0.1/libzvt/update.c	Tue Jun 11 18:04:32 2002
++++ /home/users/malekith/cvs/gnome/libzvt/libzvt/update.c	Tue Oct 15 20:15:21 2002
 @@ -17,6 +17,28 @@
   *  License along with this program; if not, write to the Free Software
   *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
@@ -169,36 +481,10 @@ diff -u -r1.72 -r1.70.2.2
  
  /*
    This module handles the update of the 'on-screen' virtual terminal
-@@ -24,7 +46,6 @@
- 
-   It also handles selections, and making them visible, etc.
- */
--
- #include <config.h>
- #include <stdio.h>
- #include <stdlib.h>
-@@ -63,7 +84,6 @@
-   /*  struct vt_line *bl;*/
-   int sx, ex;			/* start/end selection */
-   int force;
--
-   d(printf("updating line %d: ", line));
-   d(fwrite(l->data, l->width, 1, stdout));
-   d(printf("\n"));
-@@ -141,7 +161,6 @@
-       newchar = l->data[i];
-     else
-       newchar = lastchar;
--
-     /* check for selected block */
-     if (i >= sx && i < ex) {
-       newchar ^= VTATTR_REVERSE;
-@@ -149,11 +168,21 @@
- 
+@@ -150,10 +172,20 @@
      /* used in both if cases */
      newattr = newchar & VTATTR_MASK;
--
-+    
+ 
 +#ifdef HAS_I18N
 +    if (newchar & VTATTR_UTF16_HALF) {
 +      newattr &= ~VTATTR_UTF16_HALF;
@@ -216,122 +502,94 @@ diff -u -r1.72 -r1.70.2.2
        if (run) {
  	if (newattr == attr) {
  	  if (vx->back_match) {
-@@ -212,7 +241,7 @@
-     }
-     lastchar = newchar & VTATTR_MASK;
-   }
--
-+  
-   if (run) {
-     vx->draw_text(vx->vt.user_data, bl,
- 		  line, runstart, run, attr);
-@@ -1002,6 +1031,67 @@
+@@ -1002,6 +1034,71 @@
    if (start<0)
      start=0;
   
 +#ifdef HAS_I18N
-+  switch(size) {
-+  case 4: {
-+    gunichar uc;
-+    gunichar *ucs4_ptr = (gunichar *)out;
-+    for (i = start; i < end; i++) {
-+      uc = 0;
-+      if (l->data[i] & VTATTR_UTF16_HALF) {
-+	uc = (l->data[i++] & VTATTR_DATAMASK) << 16;
-+      }
-+      uc |= l->data[i] & VTATTR_DATAMASK;
-+      if (state == 0) {
-+	if (uc == 0x09)
-+	  state = 1;
-+	else if (uc < 32)
-+	  uc = ' ';
-+	*ucs4_ptr++ = uc; 
-+      } else {
-+	if (uc) {
-+	  if (uc != 0x09)
-+	    state = 0;
-+	  *ucs4_ptr++ = uc;
++  switch (size) {
++  case 4:
++    {
++      gunichar uc;
++      gunichar *ucs4_ptr = (gunichar *)out;
++      for (i = start; i < end; i++) {
++	uc = 0;
++	if (l->data[i] & VTATTR_UTF16_HALF) {
++	  uc = (l->data[i++] & VTATTR_DATAMASK) << 16;
++	}
++	uc |= l->data[i] & VTATTR_DATAMASK;
++	if (state == 0) {
++	  if (uc == 0x09)
++	    state = 1;
++	  else if (uc < 32)
++	    uc = ' ';
++	  *ucs4_ptr++ = uc; 
++	} else {
++	  if (uc) {
++	    if (uc != 0x09)
++	      state = 0;
++	    *ucs4_ptr++ = uc;
++	  }
 +	}
 +      }
++      if (lf)
++	*ucs4_ptr++ = '\n';
++      out = (char *)ucs4_ptr; 
 +    }
-+    if (lf)
-+      *ucs4_ptr++ = '\n';
-+    out = (char *)ucs4_ptr; 
-+  }
-+  break;
-+  default: {
-+    /* convert to UTF-8 */
-+    gunichar uc;
-+    gchar *utf8_ptr = out;
-+    gint utf8_len;
-+    for (i = start; i < end; i++) {
-+      uc = 0;
-+      if (l->data[i] & VTATTR_UTF16_HALF) {
-+	uc = (l->data[i++] & VTATTR_DATAMASK) << 16;
-+      }
-+      uc |= l->data[i] & VTATTR_DATAMASK;
-+      if (state == 0) {
-+	if (uc == 0x09)
-+	  state = 1;
-+	else if (uc < 32)
-+	  uc = ' ';
-+	utf8_ptr += g_unichar_to_utf8(uc, utf8_ptr);
-+      } else {
-+	if (uc) {
-+	  if (uc != 0x09)
-+	    state = 0;
++    break;
++  default:
++    {
++      /* convert to UTF-8 */
++      gunichar uc;
++      gchar *utf8_ptr = out;
++      gint utf8_len;
++      for (i = start; i < end; i++) {
++	uc = 0;
++	if (l->data[i] & VTATTR_UTF16_HALF) {
++	  uc = (l->data[i++] & VTATTR_DATAMASK) << 16;
++	}
++	uc |= l->data[i] & VTATTR_DATAMASK;
++	if (state == 0) {
++	  if (uc == 0x09)
++	    state = 1;
++	  else if (uc < 32)
++	    uc = ' ';
 +	  utf8_ptr += g_unichar_to_utf8(uc, utf8_ptr);
++	} else {
++	  if (uc) {
++	    if (uc != 0x09)
++	      state = 0;
++	    utf8_ptr += g_unichar_to_utf8(uc, utf8_ptr);
++	  }
 +	}
 +      }
++      if (lf)
++	*utf8_ptr++ = '\n';
++      out = utf8_ptr;
 +    }
-+    if (lf)
-+      *utf8_ptr++ = '\n';
-+    out = utf8_ptr;
 +  }
-+  }
-+#else      
++#endif
++
++#ifdef YUCK
    /* YUCK!  oh well, this seems easiest way to do this! */
    switch(size) {
    case 2: {
-@@ -1082,9 +1172,30 @@
+@@ -1082,6 +1179,7 @@
    }
    break;
    }
-+#endif /* HAS_I18N */
++#endif /* YUCK */
    return out;
  }
  
-+#ifdef HAS_I18N
-+gint
-+vt_column_from_utf8(gchar *utf8_ptr, gint length) {
-+  gunichar uc;
-+  gchar *p = utf8_ptr;
-+  gint count = 0;
-+
-+  do {
-+    if (*p == 0)
-+      break;
-+    
-+    uc = g_utf8_get_char(p);
-+    if (g_unichar_iswide(uc))
-+      count++;
-+    count++;
-+  } while ((p = g_utf8_next_char(p)) && (p - utf8_ptr) < length);
-+  return count;
-+}
-+#endif /* HAS_I18N */
-+
- /*
-   select block (sx,sy)-(ex,ey) from the buffer.
- 
-@@ -1159,8 +1270,16 @@
+@@ -1159,8 +1257,16 @@
        out = vt_expand_line(wn, size, 0, ex, out);
    }
  
 +#ifdef HAS_I18N
 +  *out = 0;
 +  if (size == 1) 
-+    *len = vt_column_from_utf8(data, strlen(data));
++    *len = zvt_column_from_utf8 (data, strlen(data));
 +  else
 +    *len = (out - data) / size;
 +#else  
@@ -341,28 +599,13 @@ diff -u -r1.72 -r1.70.2.2
  
    d(printf("selected text = \n");
      fwrite(data, out-data, 1, stdout);
-@@ -1294,6 +1413,7 @@
-       | ( attr & ~(VTATTR_FORECOLOURM|VTATTR_BACKCOLOURM));
-     }
-     vx->back_match=0;		/* forces re-draw? */
-+
-     vx->draw_text(vx->vt.user_data,
- 		  vx->vt.this_line,
- 		  vx->vt.cursory, vx->vt.cursorx, 1, attr);
-Index: libzvt/vt.c
-===================================================================
-RCS file: /cvs/gnome/libzvt/libzvt/vt.c,v
-retrieving revision 1.87
-retrieving revision 1.86.2.3
-diff -u -r1.87 -r1.86.2.3
---- libzvt/vt.c	3 Jun 2002 16:59:26 -0000	1.87
-+++ libzvt/vt.c	2 Aug 2002 01:58:16 -0000	1.86.2.3
-@@ -17,7 +17,28 @@
-  *  License along with this program; if not, write to the Free Software
-  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+diff -ur libzvt-2.0.1/libzvt/vt.c /home/users/malekith/cvs/gnome/libzvt/libzvt/vt.c
+--- libzvt-2.0.1/libzvt/vt.c	Mon Jun  3 18:59:26 2002
++++ /home/users/malekith/cvs/gnome/libzvt/libzvt/vt.c	Tue Oct 15 20:15:21 2002
+@@ -19,6 +19,28 @@
   */
--
-+/*
+ 
+ /*
 +  I18N codes are added by
 +	Naoyuki Ishimura <naoyuki.ishimura@sun.com>
 +	Hidetoshi Tajima <hidetoshi.tajima@sun.com>
@@ -384,10 +627,11 @@ diff -u -r1.87 -r1.86.2.3
 +   write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 +   Boston, MA 02111-1307, USA.
 +*/
- /*
++/*
    This module handles the update of the 'off-screen' virtual terminal
  */
-@@ -634,7 +655,11 @@
+ 
+@@ -634,7 +656,11 @@
    c = l->data[vt->cursorx] & VTATTR_DATAMASK;
  
    /* dont store tab over a space - will affect attributes */
@@ -399,10 +643,19 @@ diff -u -r1.87 -r1.86.2.3
      /* We do not store the attribute as tabs are transparent
       * with respect to attributes
       */
-@@ -1495,6 +1520,16 @@
+@@ -1408,7 +1434,7 @@
+         }
+       else
+         {
+-          utf8 = g_locale_to_utf8 (p, -1, NULL, NULL, NULL);
++          utf8 = zvt_term_locale_to_utf8 (p, -1, NULL, NULL, NULL);
+           /* utf8 will be NULL if the title was not valid
+            * in the locale encoding
+            */
+@@ -1494,6 +1520,15 @@
+   struct vt_jump *modes = vtjumps;
    char *ptr_end;
    void (*process)(struct vt_em *vt);	/* process function */
- 
 +#ifdef HAS_I18N
 +  /* convert UTF8 to UCS4 and process only 7 bit code
 +   * must free ucs4 at the end of this function
@@ -412,30 +665,27 @@ diff -u -r1.87 -r1.86.2.3
 +  gboolean iswide;
 +  gunichar *ucs4 = g_utf8_to_ucs4_fast (ptr, length, &char_length);
 +#endif /* HAS_I18N */
-+
+ 
    /* states:
     *   0: normal escape mode
-    *   1: escape mode.  switch on next character.
-@@ -1512,9 +1547,13 @@
+@@ -1512,6 +1547,12 @@
     */
  
    state = vt->state;
-+
 +#ifdef HAS_I18N
 +  for (i = 0; i < char_length; i++) {
 +    c = ucs4[i];
-+#else    
++#endif
++
++#ifdef YUCK  
    ptr_end = ptr + length;
    while (ptr < ptr_end) {
--
-     /* convert to unsigned byte */
-     c = (*ptr++) & 0xff;
  
-@@ -1559,7 +1598,18 @@
+@@ -1559,7 +1600,18 @@
      mode = modes[c & 0x7f].modes;
      process = modes[c & 0x7f].process;
  #endif /* ZVT_UTF */
-+#endif /* HAS_I18N */
++#endif /* YUCK */
  
 +#ifdef HAS_I18N
 +    if (c <= 0x7f) {
@@ -450,19 +700,20 @@ diff -u -r1.87 -r1.86.2.3
      vt->state = state;		/* so callbacks know their state */
      
      d(printf("state %d: %d $%02x '%c'\n",state, vt->argcnt, c, isprint(c)?c:'.'));
-@@ -1571,13 +1621,18 @@
- 	/* remap character? */
- 	if (vt->remaptable && c<=0xff)
- 	  c=vt->remaptable[c];
--	
-+
+@@ -1574,10 +1626,20 @@
+ 	
  	/* insert mode? */
  	if (vt->mode & VTMODE_INSERT)
++#ifdef HAS_I18N
++	  if (zvt_localechar_iswide(c)) {
++	    vt_insert_chars(vt, 2);
++	  } else
++#endif	    
  	  vt_insert_chars(vt, 1);
  	
  	/* need to wrap? */
 +#ifdef HAS_I18N
-+	iswide = g_unichar_iswide(c);
++	iswide = zvt_localechar_iswide(c);
 +	if (vt->cursorx >= vt->width - (iswide ? 1 : 0)) {
 +#else	  
  	if (vt->cursorx>=vt->width) {
@@ -470,7 +721,7 @@ diff -u -r1.87 -r1.86.2.3
  	  if (vt->mode&VTMODE_WRAPOFF)
  	    vt->cursorx = vt->width-1;
  	  else {
-@@ -1587,7 +1642,20 @@
+@@ -1587,7 +1649,20 @@
  	}
  	
  	/* output character */
@@ -491,7 +742,7 @@ diff -u -r1.87 -r1.86.2.3
  	vt->this_line->modcount++;
  	/* d(printf("literal %c\n", c)); */
  	vt->cursorx++;
-@@ -1706,6 +1774,10 @@
+@@ -1706,6 +1781,10 @@
    }
  
    vt->state = state;
@@ -502,14 +753,9 @@ diff -u -r1.87 -r1.86.2.3
  }
  
  /**
-Index: libzvt/vt.h
-===================================================================
-RCS file: /cvs/gnome/libzvt/libzvt/vt.h,v
-retrieving revision 1.31
-retrieving revision 1.31.2.2
-diff -u -r1.31 -r1.31.2.2
---- libzvt/vt.h	29 Nov 2001 23:56:28 -0000	1.31
-+++ libzvt/vt.h	2 Aug 2002 01:58:17 -0000	1.31.2.2
+diff -ur libzvt-2.0.1/libzvt/vt.h /home/users/malekith/cvs/gnome/libzvt/libzvt/vt.h
+--- libzvt-2.0.1/libzvt/vt.h	Fri Nov 30 00:56:28 2001
++++ /home/users/malekith/cvs/gnome/libzvt/libzvt/vt.h	Tue Oct 15 20:15:21 2002
 @@ -18,6 +18,29 @@
   *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
   */
@@ -540,36 +786,83 @@ diff -u -r1.31 -r1.31.2.2
  #ifndef _ZVT_VT_H_
  #define _ZVT_VT_H_
  
-@@ -73,10 +96,16 @@
+@@ -72,6 +95,9 @@
+ #define VTATTR_BLINK      0x10000000
  #define VTATTR_REVERSE    0x08000000
  #define VTATTR_CONCEALED  0x04000000
- 
 +#ifdef HAS_I18N
 +#define VTATTR_UTF16_HALF 0x80000000
 +#endif
-+
+ 
  /* all attributes mask, and no-attributes mask */
  #define VTATTR_MASK	  0xffff0000
- #define VTATTR_DATAMASK	  (~VTATTR_MASK)
-+
- #define VTATTR_CLEARMASK  (~(VTATTR_BOLD|VTATTR_UNDERLINE|VTATTR_BLINK|VTATTR_REVERSE))
-+  
+diff -ur libzvt-2.0.1/libzvt/zterm.c /home/users/malekith/cvs/gnome/libzvt/libzvt/zterm.c
+--- libzvt-2.0.1/libzvt/zterm.c	Tue Feb 12 17:32:20 2002
++++ /home/users/malekith/cvs/gnome/libzvt/libzvt/zterm.c	Tue Oct 15 20:15:21 2002
+@@ -41,7 +41,11 @@
  
- /* bitmasks for colour map information */
- #define VTATTR_FORECOLOURM 0x03e00000
-Index: libzvt/zvtterm.c
-===================================================================
-RCS file: /cvs/gnome/libzvt/libzvt/zvtterm.c,v
-retrieving revision 1.188
-retrieving revision 1.187.2.18
-diff -u -r1.188 -r1.187.2.18
---- libzvt/zvtterm.c	3 Jun 2002 16:59:26 -0000	1.188
-+++ libzvt/zvtterm.c	6 Aug 2002 23:38:49 -0000	1.187.2.18
-@@ -17,6 +17,47 @@
-  *  License along with this program; if not, write to the Free Software
-  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-  */
+ #include <libzvt/libzvt.h>
+ 
++#ifdef HAS_I18N
++#define FONT "monospace 13"
++#else
+ #define FONT "-misc-fixed-medium-r-normal--12-200-75-75-c-100-iso8859-1"
++#endif
+ 
+ extern char      **environ;		
+ static char      **env;
+diff -ur libzvt-2.0.1/libzvt/zvt-accessible.c /home/users/malekith/cvs/gnome/libzvt/libzvt/zvt-accessible.c
+--- libzvt-2.0.1/libzvt/zvt-accessible.c	Tue Feb 12 17:32:20 2002
++++ /home/users/malekith/cvs/gnome/libzvt/libzvt/zvt-accessible.c	Tue Oct 15 20:15:22 2002
+@@ -1061,31 +1061,28 @@
+       return;
+     }
+ 
+-  /* Note that our cache is dirty */
+-
+   zvt_accessible_priv->text_cache_dirty = TRUE;
+-
+-  updated_text = zvt_term_get_buffer (term, NULL, VT_SELTYPE_CHAR,
+-				  col, row, col+len, row);
+-  
+-  len = strlen (updated_text);  
+-  offset = _zvt_term_offset_from_xy (term, col, row);
+-
+   /* Get the text currently displayed at the update position */
+-
++  offset = _zvt_term_offset_from_xy (term, col, row);
+   if (!zvt_accessible_priv->text_cache || offset > zvt_accessible_priv->text_cache_len)
+     old_text = g_strdup ("");
+   else
+     old_text = g_strndup ((zvt_accessible_priv->text_cache)+offset, len);
 +
++  zvt_accessible_priv->real_draw_text (user_data,
++				  line, row, col, len, attr);
++  /* Note that our cache is dirty */
++
++  updated_text = zvt_term_get_buffer (term, NULL, VT_SELTYPE_CHAR,
++				  col, row, col+len, row);
+   
++  len = strlen (updated_text);  
++
+   if (strcmp (old_text, updated_text))
+     g_signal_emit_by_name (accessible, "text_changed::insert",
+ 			   offset, len);
+-  g_free (old_text);
+   g_free (updated_text);
+-
+-  zvt_accessible_priv->real_draw_text (user_data,
+-				  line, row, col, len, attr);
++  g_free (old_text);
+   
+   return;
+ }
+Only in libzvt-2.0.1/libzvt: zvt-marshal.c
+Only in libzvt-2.0.1/libzvt: zvt-marshal.h
+diff -ur libzvt-2.0.1/libzvt/zvti18n.c /home/users/malekith/cvs/gnome/libzvt/libzvt/zvti18n.c
+--- libzvt-2.0.1/libzvt/zvti18n.c	Tue Oct 15 20:22:25 2002
++++ /home/users/malekith/cvs/gnome/libzvt/libzvt/zvti18n.c	Sat Aug 31 01:05:39 2002
+@@ -0,0 +1,886 @@
 +/*
 + * Copyright (C) 2001,2002 Red Hat, Inc.
 + *
@@ -588,10 +881,13 @@ diff -u -r1.188 -r1.187.2.18
 + * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 +
 +*/
-+/*
-+  I18N codes are added by
-+	Naoyuki Ishimura <naoyuki.ishimura@sun.com>
-+	Hidetoshi Tajima <hidetoshi.tajima@sun.com>
++/*  zvti18n.c - Zed's Virtual Terminal
++ *  Copyright (C) 1998  Michael Zucchi
++ *
++ *  i18n functions for the zvtterm widget.
++ *
++  Author: Naoyuki Ishimura <naoyuki.ishimura@sun.com>
++	  Hidetoshi Tajima <hidetoshi.tajima@sun.com>
 +
 +   Copyright (C) 2002 Sun Microsystems, Inc.
 +
@@ -610,143 +906,301 @@ diff -u -r1.188 -r1.187.2.18
 +   write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 +   Boston, MA 02111-1307, USA.
 +*/
- #include <config.h>
- 
- /* please use K&R style indenting if you make changes.
-@@ -50,6 +91,10 @@
- #include <gtk/gtkselection.h>
- #include <gtk/gtkwindow.h>
- #include <gtk/gtkbindings.h>
-+#ifdef HAS_I18N
++#include <stdlib.h>
++#include <gtk/gtkmain.h>
++#include <gdk/gdkx.h>
++#include <libzvt/libzvt.h>
 +#include <gtk/gtkimmulticontext.h>
 +#include <pango/pangox.h>
-+#endif
- 
- #include <libzvt/libzvt.h>
- 
-@@ -70,7 +115,11 @@
- #define d(x)
- 
- /* default font */
++
 +#ifdef HAS_I18N
-+#define DEFAULT_FONT "monospace 13"
++
++static gboolean
++localechar_iswide_internal (gchar *mbchar, int mb_len)
++{
++  wchar_t wchar_buf[1];
++  gint wc_width;
++  gboolean ret = FALSE;
++
++  if (mbchar && mbtowc (wchar_buf, mbchar, mb_len) > 0)
++    {
++      wc_width = wcwidth (wchar_buf[0]);
++      ret = wc_width > 1 ? TRUE : FALSE;
++    }
++
++  return ret;
++}
++
++gboolean
++zvt_localechar_iswide (gunichar c)
++{
++#ifdef USE_PANGO_LAYOUT
++  return g_unichar_iswide (c);
 +#else
- #define DEFAULT_FONT "-misc-fixed-medium-r-semicondensed--13-120-75-75-c-60-iso8859-1"
++  gchar utf8_buf[6];
++  wchar_t wchar_buf[1];
++  gint wc_width;
++  gsize bytes_written;
++  GError *io_error = NULL;
++  gint len;
++  gchar *mbchar;
++  gboolean ret = FALSE;
++
++  if (c < 0x80)			/* ascii */
++    return ret;
++
++  len = g_unichar_to_utf8 (c, utf8_buf);
++  utf8_buf[len] = 0;
++  mbchar = zvt_term_locale_from_utf8 (utf8_buf, len,
++				      NULL, &bytes_written, &io_error);
++
++  ret = localechar_iswide_internal (mbchar, bytes_written);
++
++  g_free (mbchar);
++
++  return ret;
++#endif /* USE_PANGO_LAYOUT */
++}
++
++gint
++zvt_column_from_utf8 (gchar *utf8_ptr, gint length) {
++  gunichar uc;
++  gchar *p = utf8_ptr;
++  gint count = 0;
++
++  do {
++    if (*p == 0)
++      break;
++    
++    uc = g_utf8_get_char(p);
++    if (zvt_localechar_iswide (uc))
++      count++;
++    count++;
++  } while ((p = g_utf8_next_char(p)) && (p - utf8_ptr) < length);
++
++  return count;
++}
++
++void
++zvt_term_get_baseline_offset (ZvtTerm *term, int row, int col,
++			      gint *offset_x, gint *offset_y)
++{
++  /* rendering offsetx */
++  *offset_x = col * term->charwidth;
++
++#ifdef USE_PANGO_LAYOUT
++  /* pango origin does not need to be added ascent */
++  *offset_y = row * term->charheight;
++#else
++  *offset_y = row * term->charheight + term->font_ascent;
 +#endif
- 
- #define PADDING 0
- 
-@@ -178,6 +227,16 @@
-   GIOChannel *channel;
-       
-   channel = g_io_channel_unix_new (source);
-+#ifdef HAS_I18N
-+  {
-+    /* code conversion will be done after read data
-+    gchar *locale_encoding;
-+    g_get_charset(&locale_encoding);
-+    g_io_channel_set_encoding (channel, locale_encoding, NULL);
-+    */
-+    g_io_channel_set_encoding (channel, NULL, NULL);
++  return;
++}
++
++#include <locale.h>
++
++static gboolean
++zvt_term_is_c_locale ()
++{
++  gchar *locale = setlocale (LC_CTYPE, NULL);
++  return (strcmp ("C", locale) == 0 || strcmp ("POSIX", locale) == 0);
++}
++
++gchar *
++zvt_term_locale_from_utf8 (const gchar *utf8_ptr, gssize utf8_len,
++			   gsize *bytes_read, gsize *bytes_written,
++			   GError **error)
++{
++  gchar *locale_format;
++  if (zvt_term_is_c_locale())
++    locale_format = g_convert (utf8_ptr, utf8_len,
++			       "ISO-8859-1", "UTF-8",
++			       bytes_read, bytes_written, error);
++  else
++    locale_format = g_locale_from_utf8 (utf8_ptr, utf8_len, bytes_read,
++					bytes_written, error);
++  return locale_format;
++}
++
++gchar *
++zvt_term_locale_to_utf8 (const gchar *locale_ptr, gssize locale_len,
++			 gsize *bytes_read, gsize *bytes_written,
++			 GError **error)
++{
++  gchar *utf8_format;
++  if (zvt_term_is_c_locale())
++    utf8_format = g_convert (locale_ptr, locale_len,
++			     "UTF-8", "ISO-8859-1",
++			     bytes_read, bytes_written, error);
++  else
++    utf8_format = g_locale_to_utf8 (locale_ptr, locale_len, bytes_read,
++				    bytes_written, error);
++  return utf8_format;
++}
++
++void
++zvt_term_draw_text (ZvtTerm *term, struct vt_line *line, int row, int col,
++		    gchar *utf8_ptr, int len, int x, int y, int offx,
++		    int offy, GdkGC *fgc, int dofill, int overstrike)
++{
++  GtkWidget *widget;
++  glong read_count, write_count, i, utf8_len, expand_index = 0;
++
++#ifdef USE_PANGO_LAYOUT
++  PangoLayout *layout;
++  struct _zvtprivate *zp = 0;
++  zp = _ZVT_PRIVATE(term);
++#endif
++
++  widget = GTK_WIDGET (term);
++
++  for (i = col; i < col + len; i++) {
++    gunichar uc = line->data[i] & VTATTR_DATAMASK;
++    if (uc == 0 && !((line->data[i] & VTATTR_MASK) & VTATTR_UTF16_HALF)) {
++      utf8_len = 1;
++      utf8_ptr[expand_index] = ' ';
++    } else if (uc == '\t') {
++      utf8_len = 1;
++      utf8_ptr[expand_index] = ' ';
++    } else {
++      if (line->data[i] & VTATTR_UTF16_HALF) {
++	uc = (((uc << 16) & 0xffff0000) | (line->data[++i] & VTATTR_DATAMASK));
++      }
++      utf8_len = g_unichar_to_utf8 (uc, &(utf8_ptr[expand_index]));
++    }
++    expand_index += utf8_len;
 +  }
-+#endif			     
-   result = g_io_add_watch (channel, condition, function, data);
-   g_io_channel_unref (channel);
- 
-@@ -371,7 +430,7 @@
-   term->vx->draw_text = vt_draw_text;
-   term->vx->scroll_area = vt_scroll_area;
-   term->vx->selection_changed = vt_selection_changed;
--term->vx->cursor_state = vt_cursor_state;
-+  term->vx->cursor_state = vt_cursor_state;
- 
-   term->shadow_type = GTK_SHADOW_NONE;
-   term->term_window = NULL;
-@@ -385,11 +444,12 @@
-   term->back_gc = NULL;
-   term->fore_last = 0;
-   term->back_last = 0;
--  /* Deprecated */
--  /*
--  term->color_ctx = 0;
 +
-+#ifdef HAS_I18N
-   term->ic = NULL;
--  */
-+  term->xfontset = 0;
-+  term->font_ascent = 0;
-+#endif  
- 
-   /* grid sizing */
-   term->grid_width = term->vx->vt.width;
-@@ -432,7 +492,7 @@
-   zp->bold_save = 0;
-   zp->paste_id = -1;
-   zp->paste = 0;
--  
++#ifdef USE_PANGO_LAYOUT
++  zp->pango_context = gdk_pango_context_get();
++  pango_context_set_language (zp->pango_context,
++			      gtk_get_default_language ());
++  gdk_pango_context_set_colormap(zp->pango_context, term->color_map);
++  pango_context_set_font_description(zp->pango_context, zp->pango_font);
++  layout = pango_layout_new(zp->pango_context);
++  pango_layout_set_text(layout, utf8_ptr, expand_index);
 +
-   zp->auto_hint = TRUE;
-   
-   /* background stuff */
-@@ -450,7 +510,7 @@
-   g_object_set_data(G_OBJECT (term), "_zvtprivate", zp);
- 
-   /* charwidth, charheight set here */
--  zvt_term_set_font_name (term, DEFAULT_FONT);
-+  zvt_term_set_font_name (term, NULL);
- 
-   /* scrollback position adjustment */
-   term->adjustment =
-@@ -759,13 +819,14 @@
-     term->adjustment = NULL;
-   }
- 
--  /* Deprecated */
--  /*
-+#ifdef HAS_I18N
-   if (term->ic) {
--    gdk_ic_destroy(term->ic);
-+    g_object_unref(term->ic);
-     term->ic = NULL;
-   }
--  */
-+  if (term->xfontset)
-+    XFreeFontSet (GDK_DISPLAY(), term->xfontset);
-+#endif
- 
-   /* release private data */
-   if (zp) {
-@@ -787,7 +848,17 @@
- 
-     if (zp->background)
- 	zvt_term_background_unload (term);
--    
++  if (dofill) {
++    GdkColor *fcolor = &(term->colors[fore]);
++    GdkColor *bcolor = &(term->colors[back]);
++    gdk_draw_layout_with_colors(widget->window, fgc, x + offx, y + offy, layout, fcolor, bcolor);
++  } else {
++    gdk_draw_layout(widget->window, fgc, x + offx, y + offy, layout);
++  }
 +
-+#ifdef HAS_I18N    
-+    if (zp->pango_font) {
-+      pango_font_description_free(zp->pango_font);
-+    }
++  g_object_unref (layout);
++#else
++  if (utf8_ptr) {
++    GError *error = NULL;
++    gsize locale_format_len = 0;
++    gchar *locale_format;
++    G_CONST_RETURN char *locale_encoding;
 +
-+    if (zp->pango_font_bold) {
-+      pango_font_description_free(zp->pango_font_bold);
-+    }
++    if (g_get_charset(&locale_encoding)) {
++      locale_format = g_strdup(utf8_ptr);
++      locale_format_len = expand_index;
++    } else
++      locale_format = zvt_term_locale_from_utf8 (utf8_ptr, expand_index,
++						 NULL, &locale_format_len, &error);
++    if (error)
++      {
++	g_warning ("Error converting from utf8: %s\n", error->message);
++	if (error)
++	  g_error_free (error);
++      }
++    else
++      {
++	gint real_offx, real_offy;
++	GdkDrawable *real_drawable;
++	if (term->xfontset) {
++	  /* call XmbDrawString here with XFontSet */
++	  
++	  gdk_window_get_internal_paint_info(widget->window,
++					     &real_drawable,
++					     &real_offx,&real_offy);
++	  offx-=real_offx;
++	  offy-=real_offy;
 +
-+#endif
-     g_free(zp);
-    g_object_set_data (G_OBJECT (term), "_zvtprivate", 0);
-   }
-@@ -963,6 +1034,181 @@
-     }
- }
- 
-+#ifdef HAS_I18N
++#define GET_VALUE_MASK	(GCFunction | GCForeground | GCBackground | GCFillStyle)
++	  {
++	    int startx = offx + x;
++	    gchar locale_char;
++	    gchar *bufp = locale_format;
++	    gchar *endp = locale_format + locale_format_len;
++	    int mb_len;
++
++	    Display *display = GDK_WINDOW_XDISPLAY(widget->window);
++	    Drawable drawable = GDK_WINDOW_XWINDOW(real_drawable);
++	    XGCValues  values;
++	    GC gc = XCreateGC(display, drawable, 0, NULL);
++
++	    XGetGCValues(display, GDK_GC_XGC(fgc),
++			 GET_VALUE_MASK, &values);
++
++	    XSetFunction(display, gc, GXcopy);
++	    XSetFillStyle(display, gc, FillSolid);
++	    XSetForeground(display, gc, values.background);
++
++	    while (bufp < endp && (mb_len = mblen(bufp, MB_CUR_MAX)) > 0) {
++	      /* draw one multi-byte character at a time, with fill
++		 if we can */
++	      int text_width, spacing;
++	      int column_width_of_char;
++	      XRectangle extent;
++	      gboolean is_wide;
++
++	      /* fill spacing to the next character if any */
++	      text_width = XmbTextExtents(term->xfontset, bufp, mb_len,
++					  0, &extent);
++	      is_wide = localechar_iswide_internal (bufp, mb_len);
++	      spacing = term->charwidth * (is_wide ? 2 : 1) - extent.width;
++
++	      if (dofill) {
++		XmbDrawImageString(GDK_WINDOW_XDISPLAY(widget->window),
++				   GDK_WINDOW_XWINDOW(real_drawable),
++				   term->xfontset, GDK_GC_XGC(fgc),
++				   startx, offy + y,
++				   bufp, mb_len);
++	      } else {
++		XmbDrawString(GDK_WINDOW_XDISPLAY(widget->window),
++			      GDK_WINDOW_XWINDOW(real_drawable),
++			      term->xfontset, GDK_GC_XGC(fgc),
++			      startx, offy + y,
++			      bufp, mb_len);
++	      }
++	      if (dofill && spacing > 0)
++		XFillRectangle(GDK_WINDOW_XDISPLAY(widget->window),
++			       drawable,
++			       gc, startx + extent.width,
++			       offy + y + extent.y,
++			       spacing, extent.height);
++	      if (overstrike)
++		XmbDrawString(GDK_WINDOW_XDISPLAY(widget->window),
++			      GDK_WINDOW_XWINDOW(real_drawable),
++			      term->xfontset, GDK_GC_XGC(fgc),
++			      startx, offy + y,
++			      bufp, mb_len);
++	      startx += term->charwidth * (is_wide ? 2 : 1);
++	      bufp += mb_len;
++	    }
++	    XFreeGC(display, gc);
++	  }
++	  offx+=real_offx;
++	  offy+=real_offy;
++	}
++      }
++    g_free (locale_format);
++  }
++#endif /* !USE_PANGO_LAYOUT */
++}
++
 +static void
 +zvt_term_commit_handler (GtkIMContext  *context,
 +			 const gchar   *str,
 +			 ZvtTerm       *term)
 +{
-+  gsize   length = 0;
-+  gchar *locstr = g_locale_from_utf8 (str, -1, NULL, &length, NULL);
++  gsize length = 0;
++  gchar *locstr = zvt_term_locale_from_utf8 (str, -1, NULL, &length, NULL);
 +
 +  if (length > 0) {
 +    vt_writechild (&term->vx->vt, locstr, length);
@@ -755,7 +1209,8 @@ diff -u -r1.188 -r1.187.2.18
 +  g_free (locstr);
 +}
 +
-+static GdkWindow *zvt_make_preedit_window(GtkWidget *widget) {
++static GdkWindow *
++zvt_make_preedit_window (GtkWidget *widget) {
 +    GdkWindowAttr window_attr;
 +    gint attr_mask;
 +    window_attr.wclass = GDK_INPUT_OUTPUT;
@@ -767,7 +1222,9 @@ diff -u -r1.188 -r1.187.2.18
 +    return gdk_window_new(widget->window, &window_attr, attr_mask);
 +}
 +
-+static void zvt_resize_preedit_window(GdkWindow *window, gint x, gint y, ZvtTerm *term, gint width) {
++static void
++zvt_resize_preedit_window (ZvtTerm *term, GdkWindow *window,
++			   gint x, gint y, gint width) {
 +  gint space;
 +
 +  if (width > term->vx->vt.width)
@@ -777,7 +1234,8 @@ diff -u -r1.188 -r1.187.2.18
 +  if (space < width)
 +    x -= (width - space) * term->charwidth;
 +
-+  gdk_window_move_resize(window, x, y, width * term->charwidth, term->charheight);
++  gdk_window_move_resize(window, x, y,
++			 width * term->charwidth, term->charheight);
 +}
 +
 +#define PREEDIT_UNDERLINE_WIDTH 1
@@ -786,18 +1244,16 @@ diff -u -r1.188 -r1.187.2.18
 +zvt_term_preedit_changed_handler (GtkIMContext *context,
 +				  ZvtTerm *term)
 +{
-+  gchar *preedit_string;
-+  gint cursor_pos;
++  gchar *preedit_string = NULL;
++  gint cursor_pos = 0;
 +  struct _vtx *vx;
-+  PangoAttrList *feedback_list;
++  PangoAttrList *feedback_list = NULL;
 +  PangoAttrIterator *iter;
-+  PangoFontDescription *attr_font;
-+  GSList *attrs;
 +  PangoLayout *layout;
-+  GdkColor *fcolor, *bcolor;
 +  struct _zvtprivate *zp = 0;
-+  gint x, y, preedit_len, preedit_col_len, attr_start, attr_end, attr_length, attr_x, preedit_advanced;
-+  gboolean is_reverse, is_underline;
++  gint x, y;
++  gint preedit_len, preedit_col_len, preedit_advanced;
++  gint attr_start, attr_end, attr_length, attr_x;
 +  struct vt_line *line;
 +
 +  zp = _ZVT_PRIVATE(term);
@@ -820,15 +1276,15 @@ diff -u -r1.188 -r1.187.2.18
 +    zp->preedit_window = zvt_make_preedit_window(GTK_WIDGET(term));
 +  }
 +
-+  preedit_col_len = vt_column_from_utf8(preedit_string, preedit_len);
++  preedit_col_len = zvt_column_from_utf8 (preedit_string, preedit_len);
 +  cursor_pos = CLAMP (cursor_pos, 0, g_utf8_strlen (preedit_string, -1));
 +  
 +  /* adjust size of preedit window */
 +  vx = term->vx;
-+  x = vx->vt.cursorx * term->charwidth + GTK_WIDGET(term)->style->xthickness + PADDING;
++  x = vx->vt.cursorx * term->charwidth + GTK_WIDGET(term)->style->xthickness + term->padding;
 +  y = vx->vt.cursory * term->charheight + GTK_WIDGET(term)->style->ythickness;
 +
-+  zvt_resize_preedit_window(zp->preedit_window, x, y, term, preedit_col_len);
++  zvt_resize_preedit_window(term, zp->preedit_window, x, y, preedit_col_len);
 +  gdk_window_show(zp->preedit_window);
 +
 +  /* draw preedit string with attribute */ 
@@ -836,23 +1292,28 @@ diff -u -r1.188 -r1.187.2.18
 +  pango_context_set_language (zp->pango_context,
 +			      gtk_get_default_language ());
 +  gdk_pango_context_set_colormap(zp->pango_context, term->color_map);
++
 +  pango_context_set_font_description(zp->pango_context, zp->pango_font);
 +
 +  layout = pango_layout_new(zp->pango_context);
 +  iter = pango_attr_list_get_iterator(feedback_list);
++
 +  attr_x = 0;
 +  do {
-+    gchar *preedit_tmp;
++    GSList *attrs = NULL;
 +    GSList *attr_list;
++    gboolean is_reverse, is_underline;
++
 +    pango_attr_iterator_range(iter, &attr_start, &attr_end);
 +    attr_end = CLAMP(attr_end, attr_start, preedit_len);
 +    attr_length = attr_end - attr_start;
 +    if (attr_length <= 0)
 +      continue;
 +
-+    pango_attr_iterator_get_font(iter, attr_font, NULL, &attrs);
++    pango_attr_iterator_get_font (iter, zp->pango_font, NULL, &attrs);
 +    is_underline = FALSE;
 +    is_reverse = FALSE;
++
 +    attr_list = attrs;
 +    while (attr_list) {
 +      PangoAttribute *attr = attr_list->data;
@@ -875,11 +1336,11 @@ diff -u -r1.188 -r1.187.2.18
 +	break;
 +      }
 +      pango_attribute_destroy(attr);
-+      if(attr_list == attrs->next) {
-+	break; /* why this happens.... */
-+      }
-+      attr_list = attrs->next;
++      attr_list = attr_list->next;
 +    }
++
++    g_slist_free (attrs);
++
 +    pango_layout_set_text(layout, preedit_string + attr_start, attr_length);
 +    if (is_reverse) {
 +      gdk_draw_layout_with_colors(zp->preedit_window, term->fore_gc, attr_x, 0, layout,
@@ -889,7 +1350,7 @@ diff -u -r1.188 -r1.187.2.18
 +				  &(term->colors[16]), &(term->colors[17]));
 +    }
 +
-+    preedit_advanced = vt_column_from_utf8(preedit_string + attr_start, attr_length) * term->charwidth;
++    preedit_advanced = zvt_column_from_utf8 (preedit_string + attr_start, attr_length) * term->charwidth;
 +    if (is_underline) {
 +      gdk_gc_set_foreground(term->fore_gc, &(term->colors[16]));
 +      gdk_draw_rectangle(zp->preedit_window, term->fore_gc, 1,
@@ -899,143 +1360,81 @@ diff -u -r1.188 -r1.187.2.18
 +    attr_x +=  preedit_advanced;
 +  } while(pango_attr_iterator_next(iter));
 +
-+  pango_attr_iterator_destroy(iter);
++  pango_attr_iterator_destroy (iter);
++  pango_attr_list_unref (feedback_list);
 +  g_object_unref (layout);
 +  g_free (preedit_string);
 +}
 +
-+static void
-+zvt_term_im_reset (ZvtTerm *term)
++/* Public functions for Input Methods */
++void
++zvt_term_im_new (ZvtTerm *term)
 +{
-+  if (term->ic && term->need_im_reset) {
-+    term->need_im_reset = FALSE;
-+    gtk_im_context_reset (term->ic);
-+  }
-+}
-+#endif 
++  struct _zvtprivate *zp;
++  zp = _ZVT_PRIVATE(term);
 +
- static void
- zvt_term_realize (GtkWidget *widget)
- {
-@@ -1066,20 +1312,21 @@
-   term_force_size(term);
- 
-   /* input context */
--#ifdef UNDEF
--  if (gdk_im_ready () && !term->ic) {
--    GdkICAttr attr;
--    
--    /* FIXME: do we have any window yet? */
--    attr.style = GDK_IM_PREEDIT_NOTHING | GDK_IM_STATUS_NOTHING;
--    attr.client_window = attr.focus_window = widget->window;
--    term->ic = gdk_ic_new(&attr, GDK_IC_ALL_REQ);
-+#ifdef HAS_I18N
 +  if (!term->ic) {
 +    term->ic = gtk_im_multicontext_new ();
 +    g_signal_connect (term->ic, "commit",
 +		      G_CALLBACK (zvt_term_commit_handler), term);
 +
-+    gtk_im_context_set_client_window (term->ic, widget->window);
-+    /* gtk_im_context_set_use_preedit(term->ic, FALSE); */
-     
--    if (!term->ic) {
--      g_warning("Can't create input context.");
--    }
++    gtk_im_context_set_client_window (term->ic, GTK_WIDGET(term)->window);
++    
 +    g_signal_connect (G_OBJECT(term->ic), "preedit-changed",
 +		      GTK_SIGNAL_FUNC(zvt_term_preedit_changed_handler), term);
-+    zp->preedit_window = NULL;
-   }
--#endif /* UNDEF */
-+
-+#endif 
-   /* if we have a delayed background set, set it here? */
-   if (zp->background_queue) {
-     zvt_term_background_load(term, zp->background_queue);
-@@ -1129,6 +1376,11 @@
-   g_object_unref (term->fore_gc);
-   term->fore_gc = NULL;
- 
-+#ifdef HAS_I18N
-+  if (term->ic)
-+    gtk_im_context_set_client_window (term->ic, NULL);
-+#endif  
-+
-   if (GTK_WIDGET_CLASS (parent_class)->unrealize)
-     (*GTK_WIDGET_CLASS (parent_class)->unrealize) (widget);
- }
-@@ -1190,11 +1442,12 @@
-   if (term->blink_enabled && term->timeout_id == -1)
-     term->timeout_id = gtk_timeout_add (500, zvt_term_cursor_blink, term);
- 
--  /* Deprecated */
--  /*
--  if (term->ic)
--    gdk_im_begin (term->ic, widget->window);
--  */
-+#ifdef HAS_I18N
-+  if (term->ic) {
-+    term->need_im_reset = TRUE;
-+    gtk_im_context_focus_in (term->ic);
++    zp->preedit_window = 0;
 +  }
-+#endif  
- 
-   return FALSE;
- }
-@@ -1222,12 +1475,6 @@
-     term->timeout_id = -1;
-   }
-   
--  /* Deprecated */
--  /*
--  if (term->ic)
--    gdk_im_end ();
--  */
--
-   return FALSE;
- }
- 
-@@ -1361,9 +1608,14 @@
- 		    (event->area.y-offy) / term->charheight,
- 		    (event->area.x + event->area.width) / term->charwidth+1,
- 		    (event->area.y + event->area.height) / term->charheight+1);
--
-     term->in_expose = 0;
- 
-+#ifdef HAS_I18N
-+    if (zp->preedit_window != NULL && gdk_window_is_visible(zp->preedit_window)) {
-+      zvt_term_preedit_changed_handler(term->ic, term);
-+    }
-+#endif     
-+
-     if (term->shadow_type != GTK_SHADOW_NONE)
-       gtk_paint_shadow (widget->style, widget->window,
- 		        GTK_STATE_NORMAL, term->shadow_type, 
-@@ -1437,6 +1689,7 @@
- }
- 
- 
-+#ifndef HAS_I18N
- /* Load a set of fonts into the terminal.
-  * These fonts should be the same size, otherwise it could get messy ...
- i to * if font_bold is NULL, then the font is emboldened manually (overstrike)
-@@ -1504,6 +1757,7 @@
- 
-   gtk_widget_queue_resize (GTK_WIDGET (term));
- }
-+#endif /* HAS_I18N */
- 
- /**
-  * zvt_term_set_fonts:
-@@ -1527,10 +1781,302 @@
-   if (font_bold)
-       gdk_font_ref (font_bold);
-   
-+#ifndef HAS_I18N
-   zvt_term_set_fonts_internal (term, font, font_bold);
-+#endif  
++  return;
 +}
 +
-+#ifdef HAS_I18N
++void
++zvt_term_im_cursor_location (ZvtTerm *term)
++{
++  /* 
++     Some input methods may use this position to show their
++     status-bar and lookup-choice windows.
++     Adding +1 offset to both cursorx and cursory to keep
++     these windows from hiding the text at the cursor location.
++  */
++  if (term->ic) {
++    GdkRectangle area;
++    area.x = (term->vx->vt.cursorx + 1) * term->charwidth;
++    area.y = (term->vx->vt.cursory + 1) * term->charheight;
++    area.width = area.height = 0;
++    gtk_im_context_set_cursor_location (term->ic, &area);
++  }
++}
++
++void
++zvt_term_preedit_update (ZvtTerm *term)
++{
++  struct _zvtprivate *zp;
++  zp = _ZVT_PRIVATE(term);
++
++  if (zp->preedit_window != NULL &&
++      gdk_window_is_visible (zp->preedit_window))
++    zvt_term_preedit_changed_handler (term->ic, term);
++}
++
++void
++zvt_term_im_reset (ZvtTerm *term)
++{
++#ifdef NEED_IM_RESET
++  if (term->ic && term->need_im_reset) {
++    term->need_im_reset = FALSE;
++    gtk_im_context_reset (term->ic);
++  }
++#endif
++}
++
++void
++zvt_term_im_free (ZvtTerm *term)
++{
++  g_warning("not implemented yet");
++}
++
++/* FontSet */
++
 +/*
 +  xlfd_from_pango_font_description copied from vte, which was
 +  written by nalin@redhat.com, and added some codes.
@@ -1095,6 +1494,9 @@ diff -u -r1.188 -r1.187.2.18
 +	g_return_val_if_fail(GTK_IS_WIDGET(widget), NULL);
 +
 +	context = gtk_widget_get_pango_context(GTK_WIDGET(widget));
++
++	pango_context_set_language (context,
++				    gtk_get_default_language ());
 +	fontmap = pango_x_font_map_for_display(GDK_DISPLAY());
 +	if (fontmap == NULL) {
 +		return g_strdup("fixed");
@@ -1168,7 +1570,8 @@ diff -u -r1.188 -r1.187.2.18
 +zvt_term_get_xfontset_internal (ZvtTerm *term,
 +				const char *fontset_name,
 +				int *new_charwidth, 
-+				int *new_charheight)
++				int *new_charheight,
++				int *new_fontascent)
 +{
 +  gint  missing_charset_count;
 +  gchar **missing_charset_list;
@@ -1185,6 +1588,8 @@ diff -u -r1.188 -r1.187.2.18
 +  }
 +
 +  if (new_fontset) {
++    XFontStruct **xfsList = 0;
++    char **fontnameList;
 +    gint i;
 +    gint max_percharwidth = 0;
 +    gint max_percharheight = 0;
@@ -1205,7 +1610,12 @@ diff -u -r1.188 -r1.187.2.18
 +    *new_charwidth = max_percharwidth;
 +    *new_charheight = max_percharheight;
 +
-+    if (*new_charwidth == 0 || *new_charheight == 0) {
++    XFontsOfFontSet (new_fontset, &xfsList, &fontnameList);
++    if (xfsList && xfsList[0])
++      *new_fontascent = xfsList[0]->ascent;
++
++    if (*new_charwidth == 0 || *new_charheight == 0 ||
++	*new_fontascent == 0) {
 +      if (new_fontset)
 +	XFreeFontSet (GDK_DISPLAY(), new_fontset);
 +      new_fontset = 0;
@@ -1224,6 +1634,7 @@ diff -u -r1.188 -r1.187.2.18
 +  XFontSet new_fontset = 0;
 +  int new_charwidth = 0;
 +  int new_charheight = 0;
++  int new_fontascent = 0;
 +
 +  zp = _ZVT_PRIVATE (term);
 +  widget = GTK_WIDGET (term);
@@ -1233,7 +1644,8 @@ diff -u -r1.188 -r1.187.2.18
 +  if (fontset_name) {
 +    new_fontset = zvt_term_get_xfontset_internal (term, fontset_name, 
 +						  &new_charwidth,
-+						  &new_charheight);
++						  &new_charheight,
++						  &new_fontascent);
 +    g_free(fontset_name);
 +  }
 +
@@ -1248,7 +1660,8 @@ diff -u -r1.188 -r1.187.2.18
 +
 +    new_fontset = zvt_term_get_xfontset_internal (term, fontset_name,
 +						  &new_charwidth,
-+						  &new_charheight);
++						  &new_charheight,
++						  &new_fontascent);
 +    g_free (fontset_name);
 +
 +    if (new_fontset == 0 || new_charwidth == 0 || new_charheight == 0) {
@@ -1256,25 +1669,27 @@ diff -u -r1.188 -r1.187.2.18
 +      g_warning ("Use \"%s\" XLFD fontname - some characters may not appear correctly\n", fontset_name);
 +      new_fontset = zvt_term_get_xfontset_internal (term, fontset_name,
 +						    &new_charwidth,
-+						    &new_charheight);
++						    &new_charheight,
++						    &new_fontascent);
 +      g_free (fontset_name);
 +    }
 +  }
 +  g_return_if_fail (new_fontset != NULL);
 +  g_return_if_fail (new_charwidth != 0);
 +  g_return_if_fail (new_charheight != 0);
++  g_return_if_fail (new_fontascent!= 0);
 +
 +  if (term->xfontset)
-+    XFreeFontSet (GDK_WINDOW_XDISPLAY(widget->window),
-+		  term->xfontset);
++    XFreeFontSet (GDK_DISPLAY(), term->xfontset);
 +  term->xfontset = new_fontset;
 +  term->charwidth = new_charwidth;
 +  term->charheight = new_charheight;
++  term->font_ascent = new_fontascent;
 +
 +  return;
- }
- 
- /**
++}
++
++/**
 + * zvt_term_set_pango_font:
 + * @term: A &ZvtTerm widget.
 + * @font_desc: Pango Font used for regular text.
@@ -1297,108 +1712,506 @@ diff -u -r1.188 -r1.187.2.18
 +  g_return_if_fail (font_desc != NULL);
 +
 +  zp = _ZVT_PRIVATE(term);
-+  zp->pango_font = (PangoFontDescription*)font_desc;
-+  
-+  font_bold_desc = pango_font_description_copy(zp->pango_font);
-+  pango_font_description_set_weight(font_bold_desc, PANGO_WEIGHT_BOLD);
-+  zp->pango_font_bold = font_bold_desc;
++
 +  fontset = pango_context_load_fontset(gdk_pango_context_get(),
-+				       zp->pango_font, gtk_get_default_language());
++				       font_desc, gtk_get_default_language());
 +  metrics = pango_fontset_get_metrics(fontset);
 +
 +  gtk_widget_queue_resize (GTK_WIDGET (term));
 +
++#ifdef USE_PANGO_LAYOUT
 +  term->font_ascent = pango_font_metrics_get_ascent(metrics)/PANGO_SCALE;
-+
++  term->charheight = (pango_font_metrics_get_ascent(metrics) +
++		      pango_font_metrics_get_decent(metrics))/PANGO_SCALE;
++  term->charwidth = pango_font_metrics_get_approximate_digit_width(metrics)/PANGO_SCALE;
++#else
 +  zvt_term_get_xfontset (term, font_desc);
++#endif
 +
 +  if (term->xfontset == NULL ||
 +      term->charwidth == 0 || term->charheight == 0) {
 +    g_warning ("Failed to load any required font, so crash will occur.." "check X11 font pathes and etc/pangox.alias file\n");
-+    pango_font_description_free(zp->pango_font);
-+    pango_font_description_free(zp->pango_font_bold);
-+    zp->pango_font = 0;
-+    zp->pango_font_bold  = 0;
 +  }
++
++  if (zp->pango_font)
++    pango_font_description_free(zp->pango_font);
++  if (zp->pango_font_bold)
++    pango_font_description_free(zp->pango_font_bold);
++
++  zp->pango_font = pango_font_description_copy(font_desc);
++  font_bold_desc = pango_font_description_copy(font_desc);
++  pango_font_description_set_weight(font_bold_desc, PANGO_WEIGHT_BOLD);
++
++  zp->pango_font_bold = font_bold_desc;
++
 +  return;
 +
 +}
++
++#endif /* HAS_I18N */
+diff -ur libzvt-2.0.1/libzvt/zvtterm.c /home/users/malekith/cvs/gnome/libzvt/libzvt/zvtterm.c
+--- libzvt-2.0.1/libzvt/zvtterm.c	Mon Jun  3 18:59:26 2002
++++ /home/users/malekith/cvs/gnome/libzvt/libzvt/zvtterm.c	Tue Oct 15 20:15:26 2002
+@@ -17,6 +17,28 @@
+  *  License along with this program; if not, write to the Free Software
+  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+  */
++/*
++  I18N codes are added by
++	Naoyuki Ishimura <naoyuki.ishimura@sun.com>
++	Hidetoshi Tajima <hidetoshi.tajima@sun.com>
++
++   Copyright (C) 2002 Sun Microsystems, Inc.
++
++   The Gnome Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Library General Public License as
++   published by the Free Software Foundation; either version 2 of the
++   License, or (at your option) any later version.
++
++   The Gnome Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Library General Public License for more details.
++
++   You should have received a copy of the GNU Library General Public
++   License along with the Gnome Library; see the file COPYING.LIB.  If not,
++   write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
++   Boston, MA 02111-1307, USA.
++*/
+ #include <config.h>
+ 
+ /* please use K&R style indenting if you make changes.
+@@ -50,6 +72,10 @@
+ #include <gtk/gtkselection.h>
+ #include <gtk/gtkwindow.h>
+ #include <gtk/gtkbindings.h>
++#ifdef HAS_I18N
++#include <gtk/gtkimmulticontext.h>
++#include <pango/pango.h>
++#endif
+ 
+ #include <libzvt/libzvt.h>
+ 
+@@ -70,7 +96,11 @@
+ #define d(x)
+ 
+ /* default font */
++#ifdef HAS_I18N
++#define DEFAULT_FONT "monospace 13"
++#else
+ #define DEFAULT_FONT "-misc-fixed-medium-r-semicondensed--13-120-75-75-c-60-iso8859-1"
++#endif
+ 
+ #define PADDING 0
+ 
+@@ -109,7 +139,6 @@
+ static gboolean zvt_term_readmsg (GIOChannel *source, GIOCondition condition, gpointer data);
+ static void zvt_term_fix_scrollbar (ZvtTerm *term);
+ static void vtx_unrender_selection (struct _vtx *vx);
+-static void zvt_term_scroll (ZvtTerm *term, int n);
+ static void zvt_term_scroll_by_lines (ZvtTerm *term, int n);
+ static int vt_cursor_state(void *user_data, int state);
+ static gboolean zvt_term_writemore (GIOChannel *source, GIOCondition condition, gpointer data);
+@@ -178,7 +207,11 @@
+   GIOChannel *channel;
+       
+   channel = g_io_channel_unix_new (source);
+-  result = g_io_add_watch (channel, condition, function, data);
++#ifdef HAS_I18N
++  /* code conversion will be done after read data */
++  g_io_channel_set_encoding (channel, NULL, NULL);
++#endif			     
++  result = g_io_add_watch_full (channel, G_PRIORITY_LOW , condition, function, data, NULL);
+   g_io_channel_unref (channel);
+ 
+   return result;
+@@ -350,7 +383,7 @@
+   { "STRING" },
+   { "TEXT" },
+   { "COMPOUND_TEXT" },
+-#ifdef ZVT_UTF8
++#ifdef ZVT_UTF
+   { "UTF8_STRING" },
+ #endif
+ };
+@@ -371,7 +404,7 @@
+   term->vx->draw_text = vt_draw_text;
+   term->vx->scroll_area = vt_scroll_area;
+   term->vx->selection_changed = vt_selection_changed;
+-term->vx->cursor_state = vt_cursor_state;
++  term->vx->cursor_state = vt_cursor_state;
+ 
+   term->shadow_type = GTK_SHADOW_NONE;
+   term->term_window = NULL;
+@@ -385,11 +418,12 @@
+   term->back_gc = NULL;
+   term->fore_last = 0;
+   term->back_last = 0;
+-  /* Deprecated */
+-  /*
+-  term->color_ctx = 0;
++#ifdef HAS_I18N
+   term->ic = NULL;
+-  */
++  term->xfontset = 0;
++  term->font_ascent = 0;
++  term->padding = PADDING;
++#endif  
+ 
+   /* grid sizing */
+   term->grid_width = term->vx->vt.width;
+@@ -407,10 +441,6 @@
+   term->scroll_on_keystroke = 0;
+   term->scroll_on_output = 0;
+   term->blink_enabled = 1;
+-  /* Deprecated */
+-  /*
+-  term->ic = NULL;
+-  */
+   term->in_expose = 0;
+   term->transparent = 0;
+   term->shaded = 0;
+@@ -447,10 +477,16 @@
+   zp->background_watch_window = NULL;
+   zp->background_pixmap = NULL;
+     
++#ifdef HAS_I18N
++  zp->pango_context = 0;
++  zp->pango_font = 0;
++  zp->pango_font_bold = 0;
++  zp->preedit_window = 0;
++#endif
+   g_object_set_data(G_OBJECT (term), "_zvtprivate", zp);
+ 
+   /* charwidth, charheight set here */
+-  zvt_term_set_font_name (term, DEFAULT_FONT);
++  zvt_term_set_font_name (term, NULL);
+ 
+   /* scrollback position adjustment */
+   term->adjustment =
+@@ -642,7 +678,7 @@
+       app = gtk_widget_get_toplevel(GTK_WIDGET(term));
+       g_assert (app != NULL);
+ 
+-      hints.base_width = (GTK_WIDGET (term)->style->xthickness * 2) + PADDING;
++      hints.base_width = (GTK_WIDGET (term)->style->xthickness * 2) + term->padding;
+       hints.base_height =  (GTK_WIDGET (term)->style->ythickness * 2);
+       
+       hints.width_inc = term->charwidth;
+@@ -663,7 +699,7 @@
+     d(printf("forcing term size to %d, %d\n", term->grid_width, term->grid_height));
+     d(printf("                   = %d, %d\n",
+ 	     (term->grid_width * term->charwidth) + 
+-	     (GTK_WIDGET(term)->style->xthickness * 2) + PADDING,
++	     (GTK_WIDGET(term)->style->xthickness * 2) + term->padding,
+ 	     (term->grid_height * term->charheight) + 
+ 	     (GTK_WIDGET(term)->style->ythickness * 2)));
+   }
+@@ -759,13 +795,14 @@
+     term->adjustment = NULL;
+   }
+ 
+-  /* Deprecated */
+-  /*
++#ifdef HAS_I18N
+   if (term->ic) {
+-    gdk_ic_destroy(term->ic);
++    g_object_unref(term->ic);
+     term->ic = NULL;
+   }
+-  */
++  if (term->xfontset)
++    XFreeFontSet (GDK_DISPLAY(), term->xfontset);
++#endif
+ 
+   /* release private data */
+   if (zp) {
+@@ -788,6 +825,12 @@
+     if (zp->background)
+ 	zvt_term_background_unload (term);
+     
++#ifdef HAS_I18N
++   if (zp->pango_font)
++     pango_font_description_free(zp->pango_font);
++   if (zp->pango_font_bold)
++     pango_font_description_free(zp->pango_font_bold);
++#endif
+     g_free(zp);
+    g_object_set_data (G_OBJECT (term), "_zvtprivate", 0);
+   }
+@@ -982,7 +1025,7 @@
+ 
+   attributes.x = widget->allocation.x;
+   attributes.y = widget->allocation.y;
+-  attributes.width = widget->allocation.width - (2 * widget->style->xthickness) - PADDING;
++  attributes.width = widget->allocation.width - (2 * widget->style->xthickness) - term->padding;
+   attributes.height = widget->allocation.height - (2 * widget->style->ythickness);
+   attributes.wclass = GDK_INPUT_OUTPUT;
+   attributes.window_type = GDK_WINDOW_CHILD;
+@@ -1065,21 +1108,10 @@
+   /* and the initial size ... */
+   term_force_size(term);
+ 
+-  /* input context */
+-#ifdef UNDEF
+-  if (gdk_im_ready () && !term->ic) {
+-    GdkICAttr attr;
+-    
+-    /* FIXME: do we have any window yet? */
+-    attr.style = GDK_IM_PREEDIT_NOTHING | GDK_IM_STATUS_NOTHING;
+-    attr.client_window = attr.focus_window = widget->window;
+-    term->ic = gdk_ic_new(&attr, GDK_IC_ALL_REQ);
+-    
+-    if (!term->ic) {
+-      g_warning("Can't create input context.");
+-    }
+-  }
+-#endif /* UNDEF */
++#ifdef HAS_I18N
++  zvt_term_im_new (term);
 +#endif
 +
-+/**
-  * zvt_term_set_font_name:
-  * @term: A &ZvtTerm widget.
-  * @name: A full X11 font name string.
-@@ -1547,6 +2093,13 @@
+   /* if we have a delayed background set, set it here? */
+   if (zp->background_queue) {
+     zvt_term_background_load(term, zp->background_queue);
+@@ -1129,6 +1161,11 @@
+   g_object_unref (term->fore_gc);
+   term->fore_gc = NULL;
+ 
++#ifdef HAS_I18N
++  if (term->ic)
++    gtk_im_context_set_client_window (term->ic, NULL);
++#endif  
++
+   if (GTK_WIDGET_CLASS (parent_class)->unrealize)
+     (*GTK_WIDGET_CLASS (parent_class)->unrealize) (widget);
+ }
+@@ -1190,11 +1227,12 @@
+   if (term->blink_enabled && term->timeout_id == -1)
+     term->timeout_id = gtk_timeout_add (500, zvt_term_cursor_blink, term);
+ 
+-  /* Deprecated */
+-  /*
+-  if (term->ic)
+-    gdk_im_begin (term->ic, widget->window);
+-  */
++#ifdef HAS_I18N
++  if (term->ic) {
++    term->need_im_reset = TRUE;
++    gtk_im_context_focus_in (term->ic);
++  }
++#endif  
+ 
+   return FALSE;
+ }
+@@ -1222,12 +1260,6 @@
+     term->timeout_id = -1;
+   }
+   
+-  /* Deprecated */
+-  /*
+-  if (term->ic)
+-    gdk_im_end ();
+-  */
+-
+   return FALSE;
+ }
+ 
+@@ -1243,7 +1275,7 @@
+ 
+   term = ZVT_TERM (widget);
+ 
+-  requisition->width = term->charwidth + widget->style->xthickness * 2 + PADDING;
++  requisition->width = term->charwidth + widget->style->xthickness * 2 + term->padding;
+   requisition->height = term->charheight + widget->style->ythickness * 2;
+ 
+   /* debug ouput */
+@@ -1283,7 +1315,7 @@
+ 			      allocation->width,
+ 			      allocation->height);
+ 
+-      term_width = allocation->width - (2 * widget->style->xthickness) - PADDING;
++      term_width = allocation->width - (2 * widget->style->xthickness) - term->padding;
+       term_height = allocation->height - (2 * widget->style->ythickness);
+ 
+       /* resize the virtual terminal buffer, if its size has changed, minimal size is 1x1 */
+@@ -1330,9 +1362,6 @@
+   g_return_val_if_fail (ZVT_IS_TERM (widget), FALSE);
+   g_return_val_if_fail (event != NULL, FALSE);
+ 
+-  offx = widget->style->xthickness + PADDING;
+-  offy = widget->style->ythickness;
+-
+   d(printf("exposed!  (%d,%d) %dx%d\n",
+ 	   event->area.x, 
+ 	   event->area.y,
+@@ -1343,6 +1372,9 @@
+     term = ZVT_TERM (widget);
+     zp = _ZVT_PRIVATE(widget);
+     
++    offx = widget->style->xthickness + term->padding;
++    offy = widget->style->ythickness;
++
+     /* FIXME: may update 1 more line/char than needed */
+     term->in_expose = 1;
+ 
+@@ -1364,6 +1396,10 @@
+ 
+     term->in_expose = 0;
+ 
++#ifdef HAS_I18N
++    zvt_term_preedit_update (term);
++#endif     
++
+     if (term->shadow_type != GTK_SHADOW_NONE)
+       gtk_paint_shadow (widget->style, widget->window,
+ 		        GTK_STATE_NORMAL, term->shadow_type, 
+@@ -1437,6 +1473,7 @@
+ }
+ 
+ 
++#ifndef HAS_I18N
+ /* Load a set of fonts into the terminal.
+  * These fonts should be the same size, otherwise it could get messy ...
+ i to * if font_bold is NULL, then the font is emboldened manually (overstrike)
+@@ -1504,6 +1541,7 @@
+ 
+   gtk_widget_queue_resize (GTK_WIDGET (term));
+ }
++#endif /* !HAS_I18N */
+ 
+ /**
+  * zvt_term_set_fonts:
+@@ -1527,7 +1565,9 @@
+   if (font_bold)
+       gdk_font_ref (font_bold);
+   
++#ifndef HAS_I18N
+   zvt_term_set_fonts_internal (term, font, font_bold);
++#endif  
+ }
+ 
+ /**
+@@ -1547,6 +1587,16 @@
  void
  zvt_term_set_font_name (ZvtTerm *term, char *name)
  {
 +#ifdef HAS_I18N
 +  gchar *font_name;
++  PangoFontDescription *font_desc;
 +
 +  font_name = (name == NULL || name[0] == NULL) ? DEFAULT_FONT : name;
-+  zvt_term_set_pango_font (term, 
-+			   pango_font_description_from_string(font_name));
++  
++  font_desc = pango_font_description_from_string (font_name);
++  zvt_term_set_pango_font (term, font_desc);
++  pango_font_description_free (font_desc);
 +#else  
    int count;
    char c, *ptr, *rest;
    GString *newname, *outname;
-@@ -1598,6 +2151,7 @@
+@@ -1598,6 +1648,7 @@
  
    g_string_free (newname, TRUE);
    g_string_free (outname, TRUE);
-+#endif /* HAS_I18N */
++#endif /* !HAS_I18N */
  }
  
  
-@@ -1635,6 +2189,12 @@
-   if (text)
-     {
-       int i;
-+#ifdef HAS_I18N
-+      gsize bytes_read = 0, bytes_written;
-+      gchar *buf = g_locale_from_utf8(text, strlen(text),
-+				      &bytes_read, &bytes_written, NULL);
-+      gint len = strlen(buf);
-+#else      
-       /* FIXME: pasting utf8 doesn't really work! */
-       char *buf = gdk_utf8_to_string_target (text);
-       int len = strlen (buf);
-@@ -1642,7 +2202,8 @@
+@@ -1633,21 +1684,50 @@
  
-       for(i = 0; i < len; i++)
- 	if(ctmp[i] == '\n') ctmp[i] = '\r';
+   /* paste selection into window! */
+   if (text)
++#ifdef HAS_I18N
++    {
++      if (text && *text) {
++	if (term->scroll_on_keystroke)
++	  zvt_term_scroll (term, 0);
++	zvt_term_writechild (term, text, strlen (text));
++      }
++    }
++#else      
+     {
+-      int i;
++      int i, len;
++      char *buf = NULL, *ctmp, *txt_cleaner;
++
+       /* FIXME: pasting utf8 doesn't really work! */
+-      char *buf = gdk_utf8_to_string_target (text);
+-      int len = strlen (buf);
+-      char *ctmp = buf;
 -
-+#endif /* HAS_I18N */
+-      for(i = 0; i < len; i++)
+-	if(ctmp[i] == '\n') ctmp[i] = '\r';
+-
+-      if (term->scroll_on_keystroke)
+-	zvt_term_scroll (term, 0);
+-      zvt_term_writechild(term, buf, len);
+-      g_free (buf);
 +      
-       if (term->scroll_on_keystroke)
- 	zvt_term_scroll (term, 0);
-       zvt_term_writechild(term, buf, len);
-@@ -1690,6 +2251,9 @@
++      /* Check if the text from clipboard is a valid utf8. If not strip of
++       * the non printable characters with spaces. Because this
++       * causes gdk_utf8_to_string_target to return NULL and crash.
++       */
++      
++      if (!g_utf8_validate (text, -1, NULL))
++        {
++          for (txt_cleaner = (char *)text; *txt_cleaner; ++txt_cleaner)
++             if (!g_unichar_isprint (*txt_cleaner))
++               *txt_cleaner = ' ';
++        }
++
++      buf = gdk_utf8_to_string_target (text);
++
++      if (buf) {
++
++          len = strlen (buf);
++          ctmp = buf;
++
++          for(i = 0; i < len; i++)
++            if(ctmp[i] == '\n') ctmp[i] = '\r';
++
++          if (term->scroll_on_keystroke)
++            zvt_term_scroll (term, 0);
++          zvt_term_writechild(term, buf, len);
++          g_free (buf);
++        }
+     }
++#endif /* !HAS_I18N */
+ 
+   g_object_unref (G_OBJECT (term));
+ }
+@@ -1690,6 +1770,9 @@
  
    zvt_term_show_pointer (term);
  
 +#ifdef HAS_I18N
 +  zvt_term_im_reset (term);
-+#endif  
++#endif
  
    gdk_window_get_pointer(widget->window, &x, &y, &mask);
    x /= term->charwidth;
-@@ -2076,6 +2640,24 @@
+@@ -2074,8 +2157,30 @@
+ #ifdef ZVT_UTF
+ /* perform data-conversion on the selection */
  static char *
- zvt_term_convert_selection(ZvtTerm *term, int type, int *outlen)
+-zvt_term_convert_selection(ZvtTerm *term, int type, int *outlen)
++zvt_term_convert_selection (ZvtTerm *term, int type, int *outlen)
  {
 +#ifdef HAS_I18N
 +  switch (type) {
-+  case 1: /* already converted */
++  case 1:
++    /* This case should never happen...*/
++    g_warning ("return UTF-32 text (contain NULL bytes) to selection requestor\n");
 +    *outlen = term->vx->selection_size;
 +    return (gchar *)term->vx->selection_data;
-+  default: {
-+      /* max size of utf16 range UTF-8 is 4 */
-+      gchar *utf8_ptr = g_malloc(term->vx->selection_size * 4);
++  default:
++    {
++      /* 4 is max bytesize of one UTF-8 character of UTF-16(2byte Unicode)
++	 code range */
++      gchar *utf8_ptr = g_malloc (term->vx->selection_size * 4);
 +      gint i, expand_index = 0;
 +      for (i = 0; i < term->vx->selection_size; i++) {
-+	expand_index += g_unichar_to_utf8(term->vx->selection_data[i], &utf8_ptr[expand_index]);
++	expand_index += g_unichar_to_utf8 (term->vx->selection_data[i], &utf8_ptr[expand_index]);
 +      }
 +      utf8_ptr[expand_index] = '\0';
 +      *outlen = expand_index;
@@ -1409,52 +2222,96 @@ diff -u -r1.188 -r1.187.2.18
    char *out;
    int i;
    uint32 c;
-@@ -2156,8 +2738,8 @@
-     break;
+@@ -2158,8 +2263,9 @@
    }
-   }
--
+ 
    return out;
-+#endif
++#endif /* !HAS_I18N */
  }
- #endif
+-#endif
++#endif /* ZVT_UTF */
  
-@@ -2264,6 +2846,7 @@
- static gint
- zvt_term_cursor_blink(gpointer data)
+ /* supply the current selection to the caller */
+ static void
+@@ -2188,8 +2294,8 @@
+ /**
+  * zvt_term_writechild:
+  * @term: A &ZvtTerm widget.
+- * @data: Data to write.
+- * @len: Length of data to write.
++ * @utf8_data: Data to write, encoded in UTF-8.
++ * @utf8_len: Length of data to write.
+  *
+  * Writes @len bytes of data, starting from @data to the subordinate
+  * child process.  If the child is unable to handle all of the data
+@@ -2199,13 +2305,23 @@
+  * Return Value: The number of bytes written initially.
+  */
+ int
+-zvt_term_writechild(ZvtTerm *term, char *data, int len)
++zvt_term_writechild(ZvtTerm *term, char *utf8_data, int utf8_len)
  {
-+  /* NAOYUKI
-   ZvtTerm *term;
-   GtkWidget *widget;
+   int length;
+   struct _zvtprivate *zp;
++  gchar *data = 0;
++  gssize len = 0;
++  gsize bytes_written;
  
-@@ -2276,7 +2859,7 @@
+   zp = _ZVT_PRIVATE(term);
  
-   term->cursor_blink_state ^= 1;
-   vt_cursor_state(data, term->cursor_blink_state);
--
-+  */
-   return TRUE;
++  data = zvt_term_locale_from_utf8 (utf8_data, strlen(utf8_data),
++				    NULL, &bytes_written, NULL);
++  if (!data)
++    return 0;
++
++  len = strlen (data);
++
+   /* if we are already pasting something, make sure we append ... */
+   if (zp->paste_id == -1)
+     length = vt_writechild(&term->vx->vt, data, len);
+@@ -2215,7 +2331,7 @@
+   d(printf("wrote %d bytes of %d bytes\n", length, len));
+ 
+   if (length>=0 && length < len) {
+-	  
++
+     if (zp->paste_id == -1) {
+       zp->paste = g_malloc(len-length);
+       zp->paste_offset = 0;
+@@ -2230,6 +2346,7 @@
+       zp->paste_len += (len - length);
+     }
+   }
++  g_free (data);
+   return length;
  }
  
-@@ -2510,7 +3093,16 @@
+@@ -2434,7 +2551,8 @@
+   return vt_closepty (&term->vx->vt);
+ }
+ 
+-static void
++/* make it public for input method's commit event handler */
++void
+ zvt_term_scroll (ZvtTerm *term, int n)
+ {
+   gfloat new_value = 0;
+@@ -2510,7 +2628,13 @@
    if(!gtk_bindings_activate(GTK_OBJECT(widget),
                              event->keyval,
                              event->state)){
 -  
-+
++    
 +#ifdef HAS_I18N
-+    if (term->ic) {
-+      if (gtk_im_context_filter_keypress (term->ic, event)) {
-+	term->need_im_reset = TRUE;
-+	return TRUE;
-+      }
++    if (term->ic && gtk_im_context_filter_keypress (term->ic, event)) {
++      term->need_im_reset = TRUE;
++      return TRUE;
 +    }
 +#endif    
-+
    switch (event->keyval) {
    case GDK_BackSpace:
      if (term->backspace_binding == ZVT_ERASE_CONTROL_H ||
-@@ -2711,6 +3303,9 @@
+@@ -2711,6 +2835,9 @@
    if (handled && p>buffer) {
      vt_writechild(&vx->vt, buffer, (p-buffer));
      if (term->scroll_on_keystroke) zvt_term_scroll (term, 0);
@@ -1464,18 +2321,31 @@ diff -u -r1.188 -r1.187.2.18
    }
    }
  
-@@ -2909,15 +3504,28 @@
+@@ -2746,7 +2873,11 @@
+   if (term->vx->selection_size == 0)
+     return;
+ 
++#ifdef HAS_I18N
++  text = zvt_term_convert_selection (term, 0, &len);
++#else
+   text = zvt_term_convert_selection (term, 1, &len);
++#endif
+ 
+   gtk_clipboard_set_text (gtk_clipboard_get (GDK_SELECTION_CLIPBOARD), text, len);
+ 
+@@ -2909,15 +3040,31 @@
  zvt_term_readdata (GIOChannel *source, GIOCondition condition, gpointer data)
  {
    gboolean update;
 +#ifndef HAS_I18N  
    gchar buffer[4096];
--  gint count, saveerrno;
+   gint count, saveerrno;
 +#endif  
 +  gsize count, saveerrno;
    struct _vtx *vx;
    ZvtTerm *term;
 +#ifdef HAS_I18N
++  gint data_size = 0;
 +  GIOStatus io_status;
 +  GError *io_error = NULL;
 +  G_CONST_RETURN char *locale_encoding;
@@ -1484,6 +2354,7 @@ diff -u -r1.188 -r1.187.2.18
 +  gsize bytes_read;
 +  gsize bytes_written;
 +  gboolean no_need_convert = FALSE;
++  gsize left_len;
 +#else
    gint fd;
  
@@ -1494,131 +2365,165 @@ diff -u -r1.188 -r1.187.2.18
    term = (ZvtTerm *) data;
  
    if (term->input_id == -1)
-@@ -2930,7 +3538,47 @@
+@@ -2930,6 +3077,104 @@
  
    vt_cursor_state (term, 0);
    vt_match_highlight(term->vx, 0);
--  while ( (saveerrno == EAGAIN) && (count = read (fd, buffer, 4096)) > 0)  {
 +#ifdef HAS_I18N
-+  no_need_convert = g_get_charset(&locale_encoding);
++  no_need_convert = g_get_charset (&locale_encoding);
 +
-+  while (G_IO_STATUS_EOF !=
-+	 (io_status = g_io_channel_read_chars(source, buf, 4096,
-+					      &count, &io_error))) {
++  left_len = 0;
++  count = 0;
++
++  while (data_size < (8 * 1024)) {
++    io_error = NULL;
++    count = 0;
++    io_status = g_io_channel_read_chars (source, &buf[left_len],
++					 4096 - left_len,
++					 &count, &io_error);
++    if (G_IO_STATUS_EOF == io_status)
++      break;
++
 +    if (io_status == G_IO_STATUS_ERROR) {
 +      if (io_error != NULL)
-+	g_warning("%s\n", io_error->message);
++	g_warning ("%s\n", io_error->message);
 +
 +      io_error = NULL;
-+      g_io_channel_flush(source, &io_error);
-+      io_error = NULL;
++      g_io_channel_flush (source, &io_error);
 +      break;
 +    } else if (io_status == G_IO_STATUS_AGAIN) {
 +      break;
 +    }
-+    io_error = NULL;
 +
++    data_size += count;
++
++    count += left_len;
 +    if (no_need_convert)
 +      buffer = g_strdup (buf);
 +    else {
-+      buffer = g_locale_to_utf8(buf, count,
-+				&bytes_read, &bytes_written,
-+				&io_error);
-+      if (io_error != NULL) {
-+	/* g_warning("%s\n", io_error->message); */
-+	if (bytes_read > 0) {
-+	  io_error = NULL;
-+	  buffer = g_locale_to_utf8(buf, bytes_read,
-+				    &bytes_read, &bytes_written,
-+				    &io_error);
++      io_error = NULL;
++      buffer = zvt_term_locale_to_utf8 (buf, count,
++					&bytes_read, &bytes_written,
++					&io_error);
++      if (buffer) {
++	left_len = count - bytes_read;
++	if (left_len > 0) {
++	  gchar *tmp_str;
++	  /* some text remain, which should be concat to the next read data */
++	  tmp_str = g_strndup (&buf[bytes_read], left_len);
++	  if (tmp_str == NULL)
++	    break;
++	  strncpy (buf, tmp_str, left_len);
++	  g_free (tmp_str);
 +	}
++      } else {
++	if (bytes_read == 0) {
++	  gchar *tmp_str;
++	  int mb_len = mblen (buf, MB_CUR_MAX);
++	  mb_len = (mb_len > 0 ? mb_len : 1);
++
++	  tmp_str = g_strconcat ("?", &buf[mb_len], NULL);
++	  if (tmp_str == NULL)
++	    break;
++	  strcpy (buf, tmp_str);
++	  g_free (tmp_str);
++
++	  count++; /* for fallback character "?" */
++	  count -= mb_len;
++	  left_len = count;
++	  bytes_read = 1;
++	}
++
++	io_error = NULL;
++	buffer = zvt_term_locale_to_utf8 (buf, bytes_read,
++					  &bytes_read, &bytes_written,
++					  &io_error);
++	left_len = count - bytes_read;
++	if (left_len > 0) {
++	  /* some text remain, which should be concat to the next read data */
++	  gchar *tmp_str = g_strndup (&buf[bytes_read], left_len);
++	  if (tmp_str == NULL)
++	    break;
++	  strncpy (buf, tmp_str, left_len);
++	  g_free (tmp_str);
++	}
++	if (buffer == NULL)
++	  buffer = g_strdup (buf);
 +      }
-+      if (buffer == NULL)
-+	buffer = g_strdup (buf);
++
 +      if (buffer == NULL)
 +	break;
-+      count =  strlen(buffer);
++      count = strlen (buffer);
 +    }
-+#endif
-     update = TRUE;
-     saveerrno = errno;
-     vt_parse_vt (&vx->vt, buffer, count);
-@@ -2938,8 +3586,10 @@
-     if (g_signal_has_handler_pending(G_OBJECT(term),
- 				   term_signals[GOT_OUTPUT], 0, TRUE))
- 	zvt_term_got_output(term, buffer, count);
--  }
- 
++    update = TRUE;
++    saveerrno = errno;
++    vt_parse_vt (&vx->vt, buffer, count);
++
++    if (g_signal_has_handler_pending (G_OBJECT(term),
++				      term_signals[GOT_OUTPUT], 0, TRUE))
++      zvt_term_got_output (term, buffer, count);
++
 +    g_free (buffer);
 +    buffer = NULL;
 +  }
++#else
+   while ( (saveerrno == EAGAIN) && (count = read (fd, buffer, 4096)) > 0)  {
+     update = TRUE;
+     saveerrno = errno;
+@@ -2939,6 +3184,7 @@
+ 				   term_signals[GOT_OUTPUT], 0, TRUE))
+ 	zvt_term_got_output(term, buffer, count);
+   }
++#endif
+ 
    if (update) {
      if (GTK_WIDGET_DRAWABLE (term)) {
-       d( printf("zvt_term_readdata: update from read\n") );
-@@ -3182,6 +3832,21 @@
+@@ -3170,7 +3416,7 @@
+         vt_draw_cursor(term->vx, FALSE);
+         if (term->vx->vt.scrollbackold == 0 &&
+ 	    term->vx->vt.cursorx < term->vx->vt.width) {
+-	  int offx = widget->style->xthickness + PADDING;
++	  int offx = widget->style->xthickness + term->padding;
+ 	  int offy = widget->style->ythickness;
+ 	  gdk_draw_rectangle (widget->window,
+ 			      term->fore_gc, 0,
+@@ -3182,6 +3428,9 @@
  			      term->charheight - 2);
  	}
        }
 +#ifdef HAS_I18N
-+      /* 
-+	 Some input methods may use this position to show their
-+	 status-bar and lookup-choice windows.
-+	 Adding +1 offset to both cursorx and cursory to keep
-+	 these windows from hiding the text at the cursor location.
-+       */
-+      if (term->ic) {
-+	GdkRectangle area;
-+	area.x = (term->vx->vt.cursorx + 1) * term->charwidth;
-+	area.y = (term->vx->vt.cursory + 1) * term->charheight;
-+	area.width = area.height = 0;
-+	gtk_im_context_set_cursor_location(term->ic, &area);
-+      }
++      zvt_term_im_cursor_location (term);
 +#endif
        term->cursor_on = state;
      }
    }
-@@ -3207,7 +3872,6 @@
-   uint32 c;
-   struct _zvtprivate *zp=0;
- 
--  
-   widget = user_data;
- 
-   g_return_if_fail (widget != NULL);
-@@ -3223,12 +3887,31 @@
+@@ -3223,13 +3472,20 @@
    if (len+col>vx->vt.width)
      len = vx->vt.width-col;
  
+-  /* rendering offsetx */
+-  x = col * term->charwidth;
+-  y = row * term->charheight + term->font->ascent;
+-  offx = widget->style->xthickness + PADDING;
+-  offy = widget->style->ythickness;
 +#ifdef HAS_I18N
-+  if (col > 0 && g_unichar_iswide(line->data[col] & VTATTR_DATAMASK)) {
++  if (col > 0 && zvt_localechar_iswide(line->data[col] & VTATTR_DATAMASK)) {
 +    col--;
-+    len++;  
++    len++;
 +  }
 +#endif
 +  
-+  zp = _ZVT_PRIVATE(term);
-+
-   /* rendering offsetx */
-   x = col * term->charwidth;
-+#ifdef HAS_I18N
-+
-+#ifdef USE_PANGO_LAYOUT
-+  /* pango origin does not need to be added ascent */
-+  y = row * term->charheight;
-+#else
-+  y = row * term->charheight + term->font_ascent;
-+#endif
-+
-+#else
-   y = row * term->charheight + term->font->ascent;
-+#endif  
-   offx = widget->style->xthickness + PADDING;
-   offy = widget->style->ythickness;
--  zp = _ZVT_PRIVATE(term);
+   zp = _ZVT_PRIVATE(term);
  
++  zvt_term_get_baseline_offset (term, row, col, &x, &y);
++
++  offx = widget->style->xthickness + term->padding;
++  offy = widget->style->ythickness;
++
    if (attr & VTATTR_BOLD)  {
      or = 8;
-@@ -3344,9 +4027,153 @@
+     f = term->font_bold;
+@@ -3344,9 +3600,14 @@
    /* make sure we have the space to expand the text */
    if (zp->text_expand==0 || zp->text_expandlen<len) {
      zp->text_expand = g_realloc(zp->text_expand, len*sizeof(uint32));
@@ -1627,180 +2532,34 @@ diff -u -r1.188 -r1.187.2.18
    }
  
 +#ifdef HAS_I18N
-+  {
-+#ifdef USE_PANGO_LAYOUT
-+    PangoLayout *layout;
-+#endif
-+    gchar *utf8_ptr = zp->text_expand;
-+    glong read_count, write_count, i, utf8_len, expand_index = 0;
-+    GdkColor *fcolor = &(term->colors[fore]);
-+    GdkColor *bcolor = &(term->colors[back]);
-+
-+    for (i = col; i < col + len; i++) {
-+      gunichar uc = line->data[i] & VTATTR_DATAMASK;
-+      if (uc == 0 && !((line->data[i] & VTATTR_MASK) & VTATTR_UTF16_HALF)) {
-+	utf8_len = 1;
-+	utf8_ptr[expand_index] = ' ';
-+      } else if (uc == '\t') {
-+	utf8_len = 1;
-+	utf8_ptr[expand_index] = ' ';
-+      } else {
-+	if (line->data[i] & VTATTR_UTF16_HALF) {
-+	  uc = (((uc << 16) & 0xffff0000) | (line->data[++i] & VTATTR_DATAMASK));
-+	}
-+	utf8_len = g_unichar_to_utf8 (uc, &(utf8_ptr[expand_index]));
-+      }
-+      expand_index += utf8_len;
-+    }
-+
-+#ifdef USE_PANGO_LAYOUT
-+    zp->pango_context = gdk_pango_context_get();
-+    pango_context_set_language (zp->pango_context,
-+				gtk_get_default_language ());
-+    gdk_pango_context_set_colormap(zp->pango_context, term->color_map);
-+    pango_context_set_font_description(zp->pango_context, zp->pango_font);
-+    layout = pango_layout_new(zp->pango_context);
-+    pango_layout_set_text(layout, utf8_ptr, expand_index);
-+
-+    if (dofill) {
-+      gdk_draw_layout_with_colors(widget->window, fgc, x + offx, y + offy, layout, fcolor, bcolor);
-+    } else {
-+      gdk_draw_layout(widget->window, fgc, x + offx, y + offy, layout);
-+    }
-+
-+    g_object_unref (layout);
-+#else
-+    if (utf8_ptr) {
-+      GError *error = NULL;
-+      gsize locale_format_len = 0;
-+      gchar *locale_format;
-+      G_CONST_RETURN char *locale_encoding;
-+
-+      if (g_get_charset(&locale_encoding)) {
-+	locale_format = g_strdup(utf8_ptr);
-+	locale_format_len = expand_index;
-+      } else
-+	locale_format = g_locale_from_utf8 (utf8_ptr, expand_index, NULL,
-+					    &locale_format_len, &error);
-+
-+      if (error) 
-+	{
-+	  g_warning ("Error converting from utf8: %s\n", error->message);
-+	  if (error)
-+	    g_error_free (error);
-+	}
-+      else
-+	{
-+	  if (term->xfontset) {
-+	    /* call XmbDrawString here with XFontSet */
-+	  
-+	    gdk_window_get_internal_paint_info(widget->window,
-+					       &real_drawable,
-+					       &real_offx,&real_offy);
-+	    offx-=real_offx;
-+	    offy-=real_offy;
-+
-+#define GET_VALUE_MASK	(GCFunction | GCForeground | GCBackground | GCFillStyle)
-+	    {
-+	      int startx = offx + x;
-+	      gchar locale_char;
-+	      gchar *bufp = locale_format;
-+	      gchar *endp = locale_format + locale_format_len;
-+	      int mb_len;
-+
-+	      Display *display = GDK_WINDOW_XDISPLAY(widget->window);
-+	      Drawable drawable = GDK_WINDOW_XWINDOW(real_drawable);
-+	      XGCValues  values;
-+	      GC gc = XCreateGC(display, drawable, 0, NULL);
-+
-+	      XGetGCValues(display, GDK_GC_XGC(fgc),
-+			   GET_VALUE_MASK, &values);
-+
-+	      XSetFunction(display, gc, GXcopy);
-+	      XSetFillStyle(display, gc, FillSolid);
-+	      XSetForeground(display, gc, values.background);
-+
-+	      while (bufp < endp && (mb_len = mblen(bufp, MB_CUR_MAX)) > 0) {
-+		/* draw one multi-byte character at a time, with fill
-+		   if we can */
-+		int text_width, spacing;
-+		XRectangle extent;
-+		/* fill spacing to the next character if any */
-+		text_width = XmbTextExtents(term->xfontset, bufp, mb_len,
-+					    0, &extent);
-+		spacing = term->charwidth * (mb_len > 1 ? 2 : 1) - extent.width;
-+
-+		if (dofill) {
-+		  XmbDrawImageString(GDK_WINDOW_XDISPLAY(widget->window),
-+				     GDK_WINDOW_XWINDOW(real_drawable),
-+				     term->xfontset, GDK_GC_XGC(fgc),
-+				     startx, offy + y,
-+				     bufp, mb_len);
-+		} else {
-+		  XmbDrawString(GDK_WINDOW_XDISPLAY(widget->window),
-+				GDK_WINDOW_XWINDOW(real_drawable),
-+				term->xfontset, GDK_GC_XGC(fgc),
-+				startx, offy + y,
-+				bufp, mb_len);
-+		}
-+		if (dofill && spacing > 0)
-+		  XFillRectangle(GDK_WINDOW_XDISPLAY(widget->window),
-+				 drawable,
-+				 gc, startx + extent.width,
-+				 offy + y + extent.y,
-+				 spacing, extent.height);
-+		if (overstrike)
-+		  XmbDrawString(GDK_WINDOW_XDISPLAY(widget->window),
-+				GDK_WINDOW_XWINDOW(real_drawable),
-+				term->xfontset, GDK_GC_XGC(fgc),
-+				startx, offy + y,
-+				bufp, mb_len);
-+		startx += term->charwidth * (mb_len > 1 ? 2 : 1);
-+		bufp += mb_len;
-+	      }
-+	      XFreeGC(display, gc);
-+	    }
-+	    offx+=real_offx;
-+	    offy+=real_offy;
-+	  }
-+	}
-+      g_free (locale_format);
-+    }
-+#endif /* !USE_PANGO_LAYOUT */
-+  }
++  zvt_term_draw_text (term, line, row, col, zp->text_expand, len,
++		      x, y, offx, offy, fgc, dofill, overstrike);
 +#else  
    /* This funtion is provided so that we can get hokked up with the 
    real_drawable used when backing store is used, which seems to be the 
    case here, when using backing store the direct X calls needs protection
-@@ -3436,6 +4263,7 @@
+@@ -3436,6 +3697,7 @@
    }
    offx+=real_offx;
    offy+=real_offy;
-+#endif /* HAS_I18N */
++#endif /* !HAS_I18N */
  
    /* check for underline */
    if (attr&VTATTR_UNDERLINE) {
-Index: po/.cvsignore
-===================================================================
-RCS file: po/.cvsignore
-diff -N po/.cvsignore
---- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ po/.cvsignore	18 Apr 2001 16:07:50 -0000	1.1
-@@ -0,0 +1,9 @@
-+*.gmo
-+*.mo
-+Makefile
-+Makefile.in
-+Makefile.in.in
-+POTFILES
-+cat-id-tbl.c
-+stamp-cat-id
-+messages
-Index: po/ChangeLog
-===================================================================
-RCS file: po/ChangeLog
-diff -N po/ChangeLog
-Index: po/POTFILES.in
-===================================================================
-RCS file: po/POTFILES.in
-diff -N po/POTFILES.in
+@@ -3486,7 +3748,7 @@
+ 	  count,firstrow,offset,fill));
+ 
+   width = term->charwidth * term->vx->vt.width;
+-  offx = widget->style->xthickness + PADDING;
++  offx = widget->style->xthickness + term->padding;
+   offy = widget->style->ythickness;
+ 
+   /* "scroll" area */
+Only in libzvt-2.0.1: ltmain.sh
+Only in /home/users/malekith/cvs/gnome/libzvt: message-of-doom
+Only in libzvt-2.0.1: missing
+Only in libzvt-2.0.1: mkinstalldirs
+Only in /home/users/malekith/cvs/gnome/libzvt/po: CVS
+Only in /home/users/malekith/cvs/gnome/libzvt/po: ChangeLog
+Only in /home/users/malekith/cvs/gnome/libzvt/po: POTFILES.in
+Only in libzvt-2.0.1: stamp-h.in
