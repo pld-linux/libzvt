@@ -9,3 +9,17 @@
  libzvt_2_la_SOURCES = \
  	libzvt.h \
  	libzvt-init.c \
+--- libzvt-1.115.2/libzvt/Makefile.am.wiget	Thu May 16 14:59:33 2002
++++ libzvt-1.115.2/libzvt/Makefile.am	Thu May 16 15:02:55 2002
+@@ -73,10 +73,9 @@
+ 
+ gnome_pty_helper_2_SOURCES=   \
+ 	gnome-pty-helper.c    \
+-        gnome-login-support.c \
+         gnome-utmp.c
+ 
+-gnome_pty_helper_2_LDADD= $(UTIL_LIBS)
++gnome_pty_helper_2_LDADD= $(UTIL_LIBS) gnome-login-support.$(OBJEXT)
+ 
+ # Since we do gnome-pty-helper manually, include the relevant sources here
+ EXTRA_DIST = TODO BUGS README	\
