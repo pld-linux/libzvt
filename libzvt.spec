@@ -1,36 +1,40 @@
 
+%define _snap	20031020
+
 Summary:	Zvt terminal widget library
+Summary(es):	Biblioteca de widget de terminal zvt
 Summary(pl):	Biblioteka z widgetem terminala zvt
 Name:		libzvt
-Version:	2.0.1
-Release:	5
+Version:	2.0.2
+Release:	0.%{_snap}.1
 License:	LGPL
 Group:		X11/Libraries
-Source0:	http://ftp.gnome.org/pub/GNOME/sources/%{name}/2.0/%{name}-%{version}.tar.bz2
-# Source0-md5:	4bbea49495a341650fa1f89908e6554e
+Source0:	ftp://distfiles.pld-linux.org/src/%{name}-%{_snap}.tar.bz2
+# Source0-md5:	9c06f2e4ff429616284a0b1f62fe8c9b
 Patch0:		%{name}-am15.patch
-Patch1:		%{name}-i18n-branch.patch
 URL:		http://www.gnome.org/
-BuildRequires:	autoconf
-BuildRequires:	automake
+BuildRequires:	autoconf >= 2.53
+BuildRequires:	automake >= 1.7
 BuildRequires:	gtk+2-devel
 BuildRequires:	libart_lgpl-devel
-BuildRequires:	libtool
+BuildRequires:	libtool >= 1.4.3
 BuildRequires:	gnome-common
-PreReq:		utempter
+BuildRequires:	pkgconfig >= 0.14.0
+Requires:	utempter
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
-
 %description
-The libzvt package contains a terminal widget for GTK+. It's used by
-gnome-terminal among other programs.
+The libzvt package contains a terminal widget for GTK+.
+
+%description -l es
+El paquere libzvt contiene un widget de terminal para GTK+.
 
 %description -l pl
-Ten pakiet zawiera widget terminala dla GTK+. Jest u¿ywany przez
-gnome-terminal oraz inne programy.
+Ten pakiet zawiera widget terminala dla GTK+.
 
 %package devel
 Summary:	Headers for libzvt
+Summary(es):	Cabeceras para libzvt
 Summary(pl):	Pliki nag³ówkowe libzvt
 Group:		X11/Development/Libraries
 Requires:	%{name} = %{version}
@@ -38,20 +42,32 @@ Requires:	gtk+2-devel
 Requires:	libart_lgpl-devel
 
 %description devel
-The libzvt package contains a terminal widget for GTK+. It's used by
-gnome-terminal among other programs.
+The libzvt package contains a terminal widget for GTK+.
 
 You should install the libzvt-devel package if you would like to
 compile applications that use the zvt terminal widget. You do not need
 to install libzvt-devel if you just want to use precompiled
 applications.
 
+%description devel -l es
+El paquere libzvt contiene un widget de terminal para GTK+.
+
+Debe instalar el paquete libzvt-devel si quiere compilar aplicaciones
+que usan el widget de terminal zvt. No tiene por qué instalarlo si
+sólo quiere usar aplicaciones precompiladas.
+
 %description devel -l pl
 Pliki nag³ówkowe potrzebne do kompilowania programów u¿ywaj±cych
 libzvt.
 
+Powiniene¶ zainstalowaæ pakiet libzvt-devel je¶li chcesz kompilowaæ
+aplikacje które u¿ywaj± widgeta terminala zvt. Nie potrzebujesz
+instalowaæ libzvt-devel je¶li jedynie chcesz u¿ywaæ aplikacji ju¿
+skompilowanych.
+
 %package static
 Summary:	Static libzvt library
+Summary(es):	Biblioteca libzvt estática
 Summary(pl):	Statyczna biblioteka libzvt
 Group:		X11/Development/Libraries
 Requires:	%{name}-devel = %{version}
@@ -59,13 +75,15 @@ Requires:	%{name}-devel = %{version}
 %description static
 Static version of libzvt libraries.
 
+%description static -l es
+La versión estática de bibliotecas libzvt.
+
 %description static -l pl
 Statyczna wersja bibliotek libzvt.
 
 %prep
-%setup -q
+%setup -q -n %{name}
 %patch0 -p1
-%patch1 -p1
 
 %build
 rm -f missing
