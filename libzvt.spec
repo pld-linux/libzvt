@@ -1,11 +1,11 @@
-%define gtk2_version 1.3.13
-%define glib2_version 1.3.13
-%define libart_lgpl_version 2.3.8
+%define		gtk2_version		1.3.13
+%define		glib2_version		1.3.13
+%define		libart_lgpl_version	2.3.8
 
 Summary:	Zvt terminal widget library
 Summary(pl):	Biblioteka z widgetem terminala zvt
 Name:		libzvt
-Version:	1.110.0
+Version:	1.114.0
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
@@ -17,6 +17,7 @@ BuildRequires:	libart_lgpl-devel >= %{libart_lgpl_version}
 # Added to avoid the warning messages about utmp group, bug #24171
 PreReq:		utempter
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
+
 %define		_prefix		/usr/X11R6
 %define		_mandir		%{_prefix}/man
 
@@ -68,6 +69,11 @@ Statyczna wersja bibliotek libzvt.
 %setup -q
 
 %build
+rm -f missing
+libtoolize --copy --force
+aclocal
+autoconf
+automake -a -c -f
 %configure
 %{__make}
 
