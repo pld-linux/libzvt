@@ -5,12 +5,11 @@
 Summary:	Zvt terminal widget library
 Summary(pl):	Biblioteka z widgetem terminala zvt
 Name:		libzvt
-Version:	1.115.2
-Release:	1
+Version:	1.116.0
+Release:	0.1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.gnome.org/pub/gnome/pre-gnome2/sources/libzvt/%{name}-%{version}.tar.bz2
-Source1:	check-utmp.m4
 Patch0:		%{name}-am15.patch
 URL:		ftp://www.gnome.org/
 BuildRequires:	autoconf
@@ -19,6 +18,7 @@ BuildRequires:	glib2-devel >= %{glib2_version}
 BuildRequires:	gtk+2-devel >= %{gtk2_version}
 BuildRequires:	libart_lgpl-devel >= %{libart_lgpl_version}
 BuildRequires:	libtool
+BuildRequires:	gnome-common
 PreReq:		utempter
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -73,12 +73,10 @@ Statyczna wersja bibliotek libzvt.
 %setup -q
 %patch0 -p1
 
-install %{SOURCE1} .
-
 %build
 rm -f missing
 libtoolize --copy --force
-aclocal -I .
+aclocal -I %{_aclocaldir}/gnome2-macros
 %{__autoconf}
 %{__automake}
 %configure
@@ -86,15 +84,11 @@ aclocal -I .
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT%{_aclocaldir}
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT \
 	pkgconfigdir=%{_pkgconfigdir}
 
-install %{SOURCE1} $RPM_BUILD_ROOT%{_aclocaldir}
-
-gzip -9nf AUTHORS ChangeLog NEWS README
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -104,7 +98,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc *.gz
+%doc AUTHORS ChangeLog NEWS README
 %attr(755,root,root) %{_libdir}/lib*.so.*.*
 %attr(2755,root,utmp) %{_sbindir}/gnome-pty-helper-2
 
@@ -113,7 +107,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/lib*.so
 %{_libdir}/lib*.la
 %{_includedir}/libzvt-*
-%{_aclocaldir}/*
 %{_pkgconfigdir}/*
 
 %files static
