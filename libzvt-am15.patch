@@ -1,25 +1,14 @@
---- libzvt-1.114.0/libzvt/Makefile.am~	Thu Apr 25 16:33:30 2002
-+++ libzvt-1.114.0/libzvt/Makefile.am	Thu Apr 25 16:33:30 2002
-@@ -27,8 +27,6 @@
- libzvt_2_include_HEADERS = \
- 	libzvt.h lists.h background.h vt.h vtx.h
+--- libzvt-2.0.0/libzvt/Makefile.am.wiget	Thu Jun 20 10:18:04 2002
++++ libzvt-2.0.0/libzvt/Makefile.am	Thu Jun 20 10:19:33 2002
+@@ -74,10 +74,9 @@
  
--lib_LTLIBRARIES = libzvt-2.la
--
- libzvt_2_la_SOURCES = \
- 	libzvt.h \
- 	libzvt-init.c \
---- libzvt-1.115.2/libzvt/Makefile.am.wiget	Thu May 16 14:59:33 2002
-+++ libzvt-1.115.2/libzvt/Makefile.am	Thu May 16 15:02:55 2002
-@@ -73,10 +73,9 @@
- 
- gnome_pty_helper_2_SOURCES=   \
+ gnome_pty_helper_SOURCES=   \
  	gnome-pty-helper.c    \
 -        gnome-login-support.c \
          gnome-utmp.c
  
--gnome_pty_helper_2_LDADD= $(UTIL_LIBS)
-+gnome_pty_helper_2_LDADD= $(UTIL_LIBS) gnome-login-support.$(OBJEXT)
+-gnome_pty_helper_LDADD= $(UTIL_LIBS)
++gnome_pty_helper_LDADD= $(UTIL_LIBS) libzvt-2.0.la
  
  # Since we do gnome-pty-helper manually, include the relevant sources here
  EXTRA_DIST = TODO BUGS README	\
