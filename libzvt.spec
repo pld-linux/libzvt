@@ -10,6 +10,7 @@ Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.gnome.org/pub/gnome/pre-gnome2/sources/libzvt/%{name}-%{version}.tar.bz2
+Source1:	check-utmp.m4
 Patch0:		%{name}-am15.patch
 URL:		ftp://www.gnome.org/
 BuildRequires:	autoconf
@@ -18,7 +19,6 @@ BuildRequires:	glib2-devel >= %{glib2_version}
 BuildRequires:	gtk+2-devel >= %{gtk2_version}
 BuildRequires:	libart_lgpl-devel >= %{libart_lgpl_version}
 BuildRequires:	libtool
-BuildRequires:	gnome-common >= 1.2.4
 PreReq:		utempter
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -73,10 +73,12 @@ Statyczna wersja bibliotek libzvt.
 %setup -q
 %patch0 -p1
 
+install %{SOURCE1} .
+
 %build
 rm -f missing
 libtoolize --copy --force
-aclocal -I %{_aclocaldir}/gnome2-macros
+aclocal -I .
 autoconf
 automake -a -c -f
 %configure
@@ -84,10 +86,13 @@ automake -a -c -f
 
 %install
 rm -rf $RPM_BUILD_ROOT
+install $RPM_BUILD_ROOT%{_aclocaldir}
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT \
 	pkgconfigdir=%{_pkgconfigdir}
+
+install %{_SOURCE1} $RPM_BUILD_ROOT%{_aclocaldir}
 
 gzip -9nf AUTHORS ChangeLog NEWS README
 
@@ -108,6 +113,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/lib*.so
 %{_libdir}/lib*.la
 %{_includedir}/libzvt-*
+%{_aclocaldir}/*
 %{_pkgconfigdir}/*
 
 %files static
