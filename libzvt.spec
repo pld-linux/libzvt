@@ -5,7 +5,7 @@
 Summary:	Zvt terminal widget library
 Summary(pl):	Biblioteka z widgetem terminala zvt
 Name:		libzvt
-Version:	2.0.0
+Version:	2.0.1
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
