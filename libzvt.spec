@@ -13,6 +13,7 @@ Source0:	ftp://distfiles.pld-linux.org/src/%{name}-%{_snap}.tar.bz2
 # Source0-md5:	9c06f2e4ff429616284a0b1f62fe8c9b
 Patch0:		%{name}-am15.patch
 Patch1:		%{name}-pangox.patch
+Patch2:		%{name}-link.patch
 URL:		http://www.gnome.org/
 BuildRequires:	autoconf >= 2.53
 BuildRequires:	automake >= 1:1.7
@@ -86,6 +87,7 @@ Statyczna wersja bibliotek libzvt.
 %setup -q -n %{name}
 %patch0 -p1
 %patch1 -p1
+%patch2 -p0
 
 %build
 rm -f missing
