@@ -1,0 +1,11 @@
+--- libzvt/Makefile.am.orig	2002-11-13 22:29:11.000000000 +0100
++++ libzvt/Makefile.am	2006-09-17 20:02:46.238857500 +0200
+@@ -55,7 +55,7 @@
+ 	zvt-accessible-factory.c	\
+ 	zvt-accessible-factory.h
+ 
+-libzvt_2_0_la_LIBADD = $(ZVT_LIBS)
++libzvt_2_0_la_LIBADD = $(ZVT_LIBS) -lutil
+ 
+ libzvt_2_0_la_LDFLAGS = \
+ 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
