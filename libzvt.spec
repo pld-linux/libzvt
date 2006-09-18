@@ -39,7 +39,7 @@ Summary:	Headers for libzvt
 Summary(es):	Cabeceras para libzvt
 Summary(pl):	Pliki nag³ówkowe libzvt
 Group:		X11/Development/Libraries
-Requires:	%{name} = %{version}
+Requires:	%{name} = %{version}-%{release}
 Requires:	gtk+2-devel
 Requires:	libart_lgpl-devel
 
@@ -72,7 +72,7 @@ Summary:	Static libzvt library
 Summary(es):	Biblioteca libzvt estática
 Summary(pl):	Statyczna biblioteka libzvt
 Group:		X11/Development/Libraries
-Requires:	%{name}-devel = %{version}
+Requires:	%{name}-devel = %{version}-%{release}
 
 %description static
 Static version of libzvt libraries.
@@ -90,7 +90,6 @@ Statyczna wersja bibliotek libzvt.
 %patch2 -p0
 
 %build
-rm -f missing
 %{__libtoolize}
 %{__aclocal}
 %{__autoconf}
@@ -123,7 +122,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files devel
 %defattr(644,root,root,755)
-%{_libdir}/lib*.so
+%attr(755,root,root) %{_libdir}/lib*.so
 %{_libdir}/lib*.la
 %{_includedir}/libzvt-*
 %{_pkgconfigdir}/*
