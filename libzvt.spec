@@ -2,8 +2,8 @@
 %define _snap	20031020
 
 Summary:	Zvt terminal widget library
-Summary(es):	Biblioteca de widget de terminal zvt
-Summary(pl):	Biblioteka z widgetem terminala zvt
+Summary(es.UTF-8):   Biblioteca de widget de terminal zvt
+Summary(pl.UTF-8):   Biblioteka z widgetem terminala zvt
 Name:		libzvt
 Version:	2.0.2
 Release:	0.%{_snap}.3
@@ -28,16 +28,16 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 %description
 The libzvt package contains a terminal widget for GTK+.
 
-%description -l es
+%description -l es.UTF-8
 El paquere libzvt contiene un widget de terminal para GTK+.
 
-%description -l pl
+%description -l pl.UTF-8
 Ten pakiet zawiera widget terminala dla GTK+.
 
 %package devel
 Summary:	Headers for libzvt
-Summary(es):	Cabeceras para libzvt
-Summary(pl):	Pliki nag≥Ûwkowe libzvt
+Summary(es.UTF-8):   Cabeceras para libzvt
+Summary(pl.UTF-8):   Pliki nag≈Ç√≥wkowe libzvt
 Group:		X11/Development/Libraries
 Requires:	%{name} = %{version}-%{release}
 Requires:	gtk+2-devel
@@ -51,36 +51,36 @@ compile applications that use the zvt terminal widget. You do not need
 to install libzvt-devel if you just want to use precompiled
 applications.
 
-%description devel -l es
+%description devel -l es.UTF-8
 El paquere libzvt contiene un widget de terminal para GTK+.
 
 Debe instalar el paquete libzvt-devel si quiere compilar aplicaciones
-que usan el widget de terminal zvt. No tiene por quÈ instalarlo si
-sÛlo quiere usar aplicaciones precompiladas.
+que usan el widget de terminal zvt. No tiene por qu√© instalarlo si
+s√≥lo quiere usar aplicaciones precompiladas.
 
-%description devel -l pl
-Pliki nag≥Ûwkowe potrzebne do kompilowania programÛw uøywaj±cych
+%description devel -l pl.UTF-8
+Pliki nag≈Ç√≥wkowe potrzebne do kompilowania program√≥w u≈ºywajƒÖcych
 libzvt.
 
-Powiniene∂ zainstalowaÊ pakiet libzvt-devel je∂li chcesz kompilowaÊ
-aplikacje ktÛre uøywaj± widgeta terminala zvt. Nie potrzebujesz
-instalowaÊ libzvt-devel je∂li jedynie chcesz uøywaÊ aplikacji juø
+Powiniene≈õ zainstalowaƒá pakiet libzvt-devel je≈õli chcesz kompilowaƒá
+aplikacje kt√≥re u≈ºywajƒÖ widgeta terminala zvt. Nie potrzebujesz
+instalowaƒá libzvt-devel je≈õli jedynie chcesz u≈ºywaƒá aplikacji ju≈º
 skompilowanych.
 
 %package static
 Summary:	Static libzvt library
-Summary(es):	Biblioteca libzvt est·tica
-Summary(pl):	Statyczna biblioteka libzvt
+Summary(es.UTF-8):   Biblioteca libzvt est√°tica
+Summary(pl.UTF-8):   Statyczna biblioteka libzvt
 Group:		X11/Development/Libraries
 Requires:	%{name}-devel = %{version}-%{release}
 
 %description static
 Static version of libzvt libraries.
 
-%description static -l es
-La versiÛn est·tica de bibliotecas libzvt.
+%description static -l es.UTF-8
+La versi√≥n est√°tica de bibliotecas libzvt.
 
-%description static -l pl
+%description static -l pl.UTF-8
 Statyczna wersja bibliotek libzvt.
 
 %prep
