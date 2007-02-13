@@ -2,8 +2,8 @@
 %define _snap	20031020
 
 Summary:	Zvt terminal widget library
-Summary(es.UTF-8):   Biblioteca de widget de terminal zvt
-Summary(pl.UTF-8):   Biblioteka z widgetem terminala zvt
+Summary(es.UTF-8):	Biblioteca de widget de terminal zvt
+Summary(pl.UTF-8):	Biblioteka z widgetem terminala zvt
 Name:		libzvt
 Version:	2.0.2
 Release:	0.%{_snap}.3
@@ -36,8 +36,8 @@ Ten pakiet zawiera widget terminala dla GTK+.
 
 %package devel
 Summary:	Headers for libzvt
-Summary(es.UTF-8):   Cabeceras para libzvt
-Summary(pl.UTF-8):   Pliki nagłówkowe libzvt
+Summary(es.UTF-8):	Cabeceras para libzvt
+Summary(pl.UTF-8):	Pliki nagłówkowe libzvt
 Group:		X11/Development/Libraries
 Requires:	%{name} = %{version}-%{release}
 Requires:	gtk+2-devel
@@ -69,8 +69,8 @@ skompilowanych.
 
 %package static
 Summary:	Static libzvt library
-Summary(es.UTF-8):   Biblioteca libzvt estática
-Summary(pl.UTF-8):   Statyczna biblioteka libzvt
+Summary(es.UTF-8):	Biblioteca libzvt estática
+Summary(pl.UTF-8):	Statyczna biblioteka libzvt
 Group:		X11/Development/Libraries
 Requires:	%{name}-devel = %{version}-%{release}
 
